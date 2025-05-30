@@ -1,47 +1,45 @@
-import { ReactNode } from 'react';
-import { useThemeContext } from '../../context/ThemeContext';
-import { AppBar, Toolbar, IconButton, Typography, Box, CssBaseline, Drawer, List, ListItem, ListItemText } from '@mui/material';
-import Brightness4Icon from '@mui/icons-material/Brightness4';
+import { NavLink, Outlet } from 'react-router-dom';
+import { List, ListItem, ListItemText } from '@mui/material';
 
-const drawerWidth = 240;
-
-export default function AdminDashboardLayout({ children }: { children: ReactNode }) {
-  const { toggleTheme, mode } = useThemeContext();
+export default function AdminDashboardLayout() {
+  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
+    textDecoration: 'none',
+    color: isActive ? '#1976d2' : 'inherit',
+    backgroundColor: isActive ? '#e3f2fd' : 'transparent',
+    borderRadius: '4px',
+    padding: '8px 16px',
+    display: 'block',
+  });
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <CssBaseline />
-      <AppBar position="fixed" sx={{ width: `calc(100% - ${drawerWidth}px)` }}>
-        <Toolbar>
-          <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-            Admin Dashboard
-          </Typography>
-          <IconButton color="inherit" onClick={toggleTheme}>
-            <Brightness4Icon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-      <Drawer
-        variant="permanent"
-        sx={{
-          width: drawerWidth,
-          flexShrink: 0,
-          [`& .MuiDrawer-paper`]: { width: drawerWidth, boxSizing: 'border-box' },
-        }}
-      >
-        <Toolbar />
+    <div style={{ display: 'flex' }}>
+      <aside style={{ width: '240px', borderRight: '1px solid #ddd' }}>
         <List>
-          {['Categories', 'Orders', 'Users'].map((text) => (
-            <ListItem button key={text}>
-              <ListItemText primary={text} />
-            </ListItem>
-          ))}
+          <ListItem>
+            <NavLink to="/admin" style={linkStyle}>
+              <ListItemText primary="Dashboard Home" />
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/admin/categories" style={linkStyle}>
+              <ListItemText primary="Manage Categories" />
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/admin/users" style={linkStyle}>
+              <ListItemText primary="Manage Users" />
+            </NavLink>
+          </ListItem>
+          <ListItem>
+            <NavLink to="/admin/logs" style={linkStyle}>
+              <ListItemText primary="View Logs" />
+            </NavLink>
+          </ListItem>
         </List>
-      </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-        <Toolbar />
-        {children}
-      </Box>
-    </Box>
+      </aside>
+      <main style={{ flexGrow: 1, padding: '16px' }}>
+        <Outlet />
+      </main>
+    </div>
   );
 }
