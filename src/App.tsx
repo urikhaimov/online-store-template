@@ -1,43 +1,94 @@
-// src/App.tsx
-import React, { useContext } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, AuthContext } from './context/AuthContext';
-import AdminDashboardLayout from './layouts/AdminDashboardLayout';
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { CssBaseline, AppBar, Toolbar, Button, Typography, Box } from '@mui/material';
+import { ThemeContextProvider } from './context/ThemeContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import HomePage from './pages/HomePage';
-import AdminHomePage from './pages/admin/AdminHomePage/AdminHomePage';
-import NotFoundPage from './pages/NotFoundPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import MyOrdersPage from './pages/MyOrdersPage/MyOrdersPage';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminDashboardLayout from './layouts/AdminDashboardLayout/AdminDashboardLayout';
+import {ProtectedRoute, AdminProtectedRoute} from './components/ProtectedRoutes';
 
-const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useContext(AuthContext);
-  if (!auth || auth.loading) return <div>Loading...</div>;
-  return auth.user ? <>{children}</> : <Navigate to="/" />;
-};
+import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 
-const AdminProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const auth = useContext(AuthContext);
-  if (!auth || auth.loading) return <div>Loading...</div>;
-  return auth.user && auth.isAdmin ? <>{children}</> : <Navigate to="/" />;
+const Navbar = () => {
+  const { user, logout, isAdmin } = useAuth();
+
+  return (
+    <AppBar position="static">
+      <Toolbar>
+        <Typography variant="h6" sx={{ flexGrow: 1 }}>
+          My Online Store
+        </Typography>
+        <Button color="inherit" component={Link} to="/">
+          Home
+        </Button>
+        {user ? (
+          <>
+            <Button color="inherit" component={Link} to="/orders">
+              My Orders
+            </Button>
+            {isAdmin && (
+              <Button color="inherit" component={Link} to="/admin">
+                Admin
+              </Button>
+            )}
+            <Button color="inherit" onClick={logout}>
+              Logout
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button color="inherit" component={Link} to="/login">
+              Login
+            </Button>
+            <Button color="inherit" component={Link} to="/signup">
+              Sign Up
+            </Button>
+          </>
+        )}
+      </Toolbar>
+    </AppBar>
+  );
 };
 
 export default function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route
-            path="/admin/*"
-            element={
-              <AdminProtectedRoute>
-                <AdminDashboardLayout>
-                  <AdminHomePage />
-                </AdminDashboardLayout>
-              </AdminProtectedRoute>
-            }
-          />
-          <Route path="*" element={<NotFoundPage />} />
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+    <ThemeContextProvider>
+      <AuthProvider>
+        <CssBaseline />
+        <Router>
+          <Navbar />
+          <Box sx={{ p: 3 }}>
+            <Routes>
+              <Route path="/" element={<HomePage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/signup" element={<SignupPage />} />
+              <Route
+                path="/orders"
+                element={
+                  <ProtectedRoute>
+                    <MyOrdersPage />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/admin/*"
+                element={
+                  <AdminProtectedRoute>
+                    <AdminDashboardLayout>
+                      <AdminDashboardPage />
+                    </AdminDashboardLayout>
+                  </AdminProtectedRoute>
+                }
+              />
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Box>
+        </Router>
+      </AuthProvider>
+    </ThemeContextProvider>
   );
 }
