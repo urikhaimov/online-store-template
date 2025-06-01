@@ -4,18 +4,18 @@ import { useCartStore } from '../../store/cartStore';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '../../api/firebase';
 import { Button, TextField, Box, Typography } from '@mui/material';
-import { useAuth } from '../../hooks/useAuth';
+import { getSafeAuth } from '../../hooks/getSafeAuth';
 export default function CheckoutPage() {
   const { register, handleSubmit } = useForm();
   const cart = useCartStore();
- const { user } = useAuth();
+ const { user } = getSafeAuth();
   const onSubmit = async (data: any) => {
     try {
       await addDoc(collection(db, 'orders'), {
         ...data,
         items: cart.items,
         total: cart.getTotal(),
-        userId: user?.uid,  // ← grab user from auth, not cart
+        userId: user?.firebaseUser.uid,  // ← grab user from auth, not cart
         createdAt: new Date(),
       });
       cart.clearCart();

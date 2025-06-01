@@ -1,10 +1,16 @@
 import { AppBar, Toolbar, Typography, Button } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-
+import { useAuthSafe } from '../hooks/useAuthSafe';
+import { getSafeAuth } from '../hooks/getSafeAuth';
 export default function Navbar() {
-  const { user, logout } = useAuth();
+const auth = useAuthSafe();
 
+if (!auth) {
+  console.log('Not inside AuthProvider');
+} else {
+  console.log('Logged in as:', auth.user);
+}
+ const { user, logout } = getSafeAuth();
   return (
     <AppBar position="static">
       <Toolbar>
@@ -28,7 +34,7 @@ export default function Navbar() {
             <Button color="inherit" component={Link} to="/profile">
               Profile
             </Button>
-            {user.email === 'admin@example.com' && (
+            {user?.firebaseUser.email === 'admin@example.com' && (
               <Button color="inherit" component={Link} to="/admin/orders">
                 Admin Orders
               </Button>

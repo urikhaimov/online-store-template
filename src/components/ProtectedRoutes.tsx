@@ -1,34 +1,45 @@
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
-import { ReactNode } from 'react';
+import { useAuthSafe } from '../hooks/useAuthSafe';
+import { getSafeAuth } from '../hooks/getSafeAuth';
+import { CircularProgress, Box, Typography } from '@mui/material';
+import { useIsAdmin } from '../hooks/useIsAdmin';
+export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = getSafeAuth();
 
-interface ProtectedRouteProps {
-  children: ReactNode;
-}
-
-interface AdminProtectedRouteProps {
-  children: ReactNode;
-}
-
-export  function ProtectedRoute({ children }: ProtectedRouteProps) {
-  const { user } = useAuth();
+  if (loading) {
+    return (
+      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   if (!user) {
     return <Navigate to="/login" replace />;
   }
 
   return <>{children}</>;
-}
+};
 
+export const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, loading } = getSafeAuth();
+  const isAdmin = useIsAdmin();
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
-export  function AdminProtectedRoute({ children }: AdminProtectedRouteProps) {
-  const { user } = useAuth();
+  if (!user) {
+    return <div>Please log in</div>;
+  }
 
-  const isAdmin = user?.email === 'admin@example.com'; // replace with your admin rule
-
-  if (!user || !isAdmin) {
-    return <Navigate to="/login" replace />;
+  if (!isAdmin) {
+    return (
+      <Box sx={{ textAlign: 'center', mt: 4 }}>
+        <Typography variant="h5">Access Denied</Typography>
+        <Typography>You do not have admin permissions.</Typography>
+      </Box>
+    );
   }
 
   return <>{children}</>;
-}
+};

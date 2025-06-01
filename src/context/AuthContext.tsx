@@ -1,6 +1,4 @@
-// src/context/AuthContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { auth } from '../api/firebase';
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -9,9 +7,16 @@ import {
   User,
   UserCredential,
 } from 'firebase/auth';
+import { auth } from '../api/firebase';
+import { doc, getDoc, setDoc, getFirestore } from 'firebase/firestore';
 
-interface AuthContextType {
-  user: User | null;
+export interface AppUser {
+  firebaseUser: User;
+  role: string;
+}
+
+export interface AuthContextType {
+  user: AppUser | null;
   loading: boolean;
   isAdmin: boolean;
   login: (email: string, password: string) => Promise<UserCredential>;
@@ -22,26 +27,56 @@ interface AuthContextType {
 export const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
+  const db = getFirestore();
 
-  const isAdmin = user?.email === 'admin@example.com'; // simple hardcoded check
+  const fetchUserRole = async (uid: string): Promise<string> => {
+    const docRef = doc(db, 'users', uid);
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? (docSnap.data().role as string) : 'user';
+  };
+
+  const handleAuthState = async (firebaseUser: User | null) => {
+    if (firebaseUser) {
+      const role = await fetchUserRole(firebaseUser.uid);
+      setUser({ firebaseUser, role });
+    } else {
+      setUser(null);
+    }
+    setLoading(false);
+  };
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
-      setUser(currentUser);
-      setLoading(false);
+    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      await handleAuthState(firebaseUser);
     });
-    return () => unsubscribe();
+    return unsubscribe;
   }, []);
 
-  const login = (email: string, password: string) =>
-    signInWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string): Promise<UserCredential> => {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    await handleAuthState(userCredential.user);
+    return userCredential;
+  };
 
-  const signup = (email: string, password: string) =>
-    createUserWithEmailAndPassword(auth, email, password);
+  const signup = async (email: string, password: string): Promise<UserCredential> => {
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    await setDoc(doc(db, 'users', userCredential.user.uid), {
+      email: userCredential.user.email,
+      role: 'user',
+      createdAt: new Date().toISOString(),
+    });
+    await handleAuthState(userCredential.user);
+    return userCredential;
+  };
 
-  const logout = () => signOut(auth);
+  const logout = async (): Promise<void> => {
+    await signOut(auth);
+    setUser(null);
+  };
+
+  const isAdmin = user?.role === 'admin';
 
   return (
     <AuthContext.Provider value={{ user, loading, isAdmin, login, signup, logout }}>
@@ -50,10 +85,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => {
+// ✅ EXPORT THE HOOK
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error('useAuth must be used inside an AuthProvider');
   }
   return context;
 };

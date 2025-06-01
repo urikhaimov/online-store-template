@@ -1,22 +1,25 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../../context/AuthContext';
+import { getSafeAuth } from '../../hooks/getSafeAuth';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 
 export default function SignupPage() {
-  const { register, handleSubmit } = useForm();
-  const { signup } = useAuth();
+  const { register, handleSubmit, reset } = useForm();
+  const { signup } = getSafeAuth();
   const navigate = useNavigate();
-
-  const onSubmit = async (data: any) => {
+const onSubmit = async (data: any) => {
     try {
       await signup(data.email, data.password);
-      navigate('/');
+      alert('Signup successful!');
+      reset(); // clear form
+      navigate('/'); // navigate home or to dashboard
     } catch (err: any) {
-      alert('Signup failed: ' + err.message);
+      console.error('Signup error:', err); // log full error
+      alert('Signup failed: ' + (err?.message || 'Unknown error'));
     }
   };
+
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">

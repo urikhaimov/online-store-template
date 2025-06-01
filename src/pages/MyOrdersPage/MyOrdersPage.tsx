@@ -1,11 +1,11 @@
-import { useAuth } from '../../hooks/useAuth';
+import { useAuthSafe } from '../../hooks/useAuthSafe';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { db } from '../../api/firebase';
 import { useCartStore } from '../../store/cartStore';
 import { Box, Typography, Paper, CircularProgress, Button } from '@mui/material';
 import { toast } from 'react-toastify';
-
+import { getSafeAuth } from '../../hooks/getSafeAuth';
 interface OrderItem {
   id: string;
   name: string;
@@ -32,13 +32,13 @@ const fetchUserOrders = async (uid: string): Promise<Order[]> => {
 };
 
 export default function MyOrdersPage() {
-  const { user } = useAuth();
+  const { user } = getSafeAuth();
   const cart = useCartStore();
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery<Order[], Error>({
-    queryKey: ['orders', user?.uid],
-    queryFn: () => fetchUserOrders(user!.uid),
+    queryKey: ['orders', user?.firebaseUser.uid],
+    queryFn: () => fetchUserOrders(user!.firebaseUser.uid),
     enabled: !!user,
   });
 
@@ -47,7 +47,7 @@ export default function MyOrdersPage() {
       await deleteDoc(doc(db, 'orders', orderId));
     },
     onSuccess: (_, orderId) => {
-      queryClient.invalidateQueries({ queryKey: ['orders', user?.uid] });
+      queryClient.invalidateQueries({ queryKey: ['orders', user?.firebaseUser.uid] });
       toast.success(`Order ${orderId} canceled`);
     },
     onError: (err) => {

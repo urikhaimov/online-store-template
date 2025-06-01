@@ -1,8 +1,8 @@
 import { Box, Typography, Paper } from '@mui/material';
-import { useAuth } from '../../hooks/useAuth';
 
+import { getSafeAuth } from '../../hooks/getSafeAuth';
 export default function UserProfilePage() {
-  const { user } = useAuth();
+  const { user } = getSafeAuth();
 
   if (!user) {
     return <Typography variant="h6">No user data available.</Typography>;
@@ -15,13 +15,13 @@ export default function UserProfilePage() {
           My Profile
         </Typography>
         <Typography variant="body1">
-          <strong>Display Name:</strong> {user.displayName || 'N/A'}
+          <strong>Display Name:</strong> {user?.firebaseUser.displayName || 'N/A'}
         </Typography>
         <Typography variant="body1">
-          <strong>Email:</strong> {user.email}
+          <strong>Email:</strong> {user?.firebaseUser.email}
         </Typography>
         <Typography variant="body1">
-          <strong>UID:</strong> {user.uid}
+          <strong>UID:</strong> {user?.firebaseUser.uid}
         </Typography>
       </Paper>
     </Box>

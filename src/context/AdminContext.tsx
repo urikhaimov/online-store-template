@@ -1,6 +1,5 @@
 import { createContext, useContext, ReactNode } from 'react';
-import { useAuth } from '../hooks/useAuth';
-
+import { getSafeAuth } from '../hooks/getSafeAuth';
 interface AdminContextType {
   isAdmin: boolean;
 }
@@ -8,8 +7,8 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = useAuth();
-  const isAdmin = user?.email === 'admin@example.com'; // or use a claim/check
+  const { user } = getSafeAuth();
+  const isAdmin = user?.firebaseUser.email === 'admin@example.com'; // or use a claim/check
 
   return (
     <AdminContext.Provider value={{ isAdmin }}>
