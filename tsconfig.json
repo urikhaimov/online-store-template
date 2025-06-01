@@ -1,16 +1,16 @@
 {
-  "compilerOptions": {
+    "compilerOptions": {
     "target": "ESNext",
-    "useDefineForClassFields": true,
     "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
+    "moduleResolution": "Node",
     "jsx": "react-jsx",
-    "resolveJsonModule": true,
+    "strict": true,
     "esModuleInterop": true,
-    "isolatedModules": true,
-    "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "allowSyntheticDefaultImports": true,
+    "resolveJsonModule": true,
+    "outDir": "dist"
   },
   "include": ["src"],
   "references": [{ "path": "./tsconfig.node.json" }]
