@@ -1,56 +1,98 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
-  Typography,
-  Box,
-  Button,
+    Drawer,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Box,
+    Button,
+    Divider,
+    Fade,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { useCart } from '../context/CartContext';
-import {CartDrawerProps} from '../types/CartDrawerProps';
+
+interface CartDrawerProps {
+    open: boolean;
+    onClose: () => void;
+}
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
-  const { state, updateQuantity, removeFromCart, clearCart } = useCart();
-  const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    const { state, updateQuantity, removeFromCart, clearCart } = useCart();
+    const navigate = useNavigate();
 
-  return (
-    <Drawer anchor="right" open={open} onClose={onClose}>
-      <Box sx={{ width: 300, p: 2 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="h6">Your Cart</Typography>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
-        </Box>
-        <List>
-          {state.items.map((item) => (
-            <ListItem key={item.id} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
-              <ListItemText
-                primary={`${item.name} (${item.quantity})`}
-                secondary={`$${item.price.toFixed(2)} each`}
-              />
-              <Box sx={{ display: 'flex', gap: 1 }}>
-                <Button onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
-                  -
-                </Button>
-                <Button onClick={() => updateQuantity(item.id, item.quantity + 1)}>+</Button>
-                <Button color="error" onClick={() => removeFromCart(item.id)}>
-                  Remove
-                </Button>
-              </Box>
-            </ListItem>
-          ))}
-        </List>
-        <Typography variant="subtitle1">Total: ${total.toFixed(2)}</Typography>
-        <Button fullWidth variant="contained" sx={{ mt: 2 }} onClick={clearCart}>
-          Clear Cart
-        </Button>
-      </Box>
-    </Drawer>
-  );
+    const handleCheckout = () => {
+        onClose();
+        navigate('/checkout');
+    };
+    const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+    return (
+        <Drawer anchor="right" open={open} onClose={onClose}>
+            <Box sx={{ width: 350, display: 'flex', flexDirection: 'column', height: '100%' }}>
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', p: 2, bgcolor: 'primary.main', color: 'primary.contrastText' }}>
+                    <Typography variant="h6">Your Cart</Typography>
+                    <IconButton onClick={onClose} sx={{ color: 'primary.contrastText' }}>
+                        <CloseIcon />
+                    </IconButton>
+                </Box>
+
+                <Divider />
+
+                <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 2 }}>
+                    <List>
+                        {state.items.map((item) => (
+                            <Fade in key={item.id}>
+                                <ListItem sx={{ mb: 1, bgcolor: 'background.paper', borderRadius: 2, boxShadow: 1 }}>
+                                    <Box sx={{ flexGrow: 1 }}>
+                                        <ListItemText
+                                            primary={item.name}
+                                            secondary={`$${item.price.toFixed(2)} × ${item.quantity}`}
+                                        />
+                                        <Box sx={{ display: 'flex', gap: 1, mt: 1 }}>
+                                            <Button variant="outlined" size="small" onClick={() => updateQuantity(item.id, item.quantity - 1)} disabled={item.quantity <= 1}>
+                                                -
+                                            </Button>
+                                            <Button variant="outlined" size="small" onClick={() => updateQuantity(item.id, item.quantity + 1)}>
+                                                +
+                                            </Button>
+                                            <Button color="error" size="small" onClick={() => removeFromCart(item.id)}>
+                                                Remove
+                                            </Button>
+                                        </Box>
+                                    </Box>
+                                </ListItem>
+                            </Fade>
+                        ))}
+                    </List>
+                </Box>
+
+                <Divider />
+
+                <Box sx={{ p: 2 }}>
+                    <Typography variant="subtitle1" sx={{ mb: 1 }}>
+                        Total: ${total.toFixed(2)}
+                    </Typography>
+                    <Button
+                        variant="contained"
+                        color="secondary"
+                        fullWidth
+                        sx={{ mb: 1 }}
+                        onClick={() => {
+                            onClose();
+                            window.location.href = '/checkout';
+                        }}
+                    >
+                        Checkout
+                    </Button>
+                    <Button variant="outlined" color="error" fullWidth onClick={clearCart}>
+                        Clear Cart
+                    </Button>
+                </Box>
+            </Box>
+        </Drawer>
+    );
 };
-export default CartDrawer;
