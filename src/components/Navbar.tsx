@@ -1,54 +1,129 @@
-import { AppBar, Toolbar, Typography, Button } from '@mui/material';
+// src/components/Navbar.tsx
+import React, { useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Button,
+  IconButton,
+  Box,
+  Drawer,
+  List,
+  ListItem,
+  ListItemText,
+  Divider,
+  useTheme,
+  useMediaQuery
+} from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import { useAuthSafe } from '../hooks/useAuthSafe';
-import { getSafeAuth } from '../hooks/getSafeAuth';
-export default function Navbar() {
-const auth = useAuthSafe();
+import { useAuth } from '../context/AuthContext';
+import CartButton from './CartButton';
 
-if (!auth) {
-  console.log('Not inside AuthProvider');
-} else {
-  console.log('Logged in as:', auth.user);
-}
- const { user, logout } = getSafeAuth();
-  return (
-    <AppBar position="static">
-      <Toolbar>
-        <Typography variant="h6" sx={{ flexGrow: 1 }}>
-          My Online Store
-        </Typography>
-        <Button color="inherit" component={Link} to="/">
-          Home
-        </Button>
-        <Button color="inherit" component={Link} to="/cart">
-          Cart
-        </Button>
-        {user ? (
-          <>
-            <Button color="inherit" component={Link} to="/checkout">
-              Checkout
-            </Button>
-            <Button color="inherit" component={Link} to="/my-orders">
-              My Orders
-            </Button>
-            <Button color="inherit" component={Link} to="/profile">
-              Profile
-            </Button>
-            {user?.email === 'admin@example.com' && (
-              <Button color="inherit" component={Link} to="/admin/orders">
-                Admin Orders
-              </Button>
-            )}
-            <Button color="inherit" onClick={logout}>
-              Logout
-            </Button>
-          </>
-        ) : (
-          <Button color="inherit" component={Link} to="/login">
-            Login
-          </Button>
-        )}
-      </Toolbar>
-    </AppBar>
+const Navbar = () => {
+  const { user, logout, isAdmin } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const toggleDrawer = () => setMobileOpen(!mobileOpen);
+
+  const navLinks = [
+    { to: '/', label: 'Home' },
+    { to: '/cart', label: 'Cart' },
+    { to: '/checkout', label: 'Checkout' },
+    ...(user ? [{ to: '/my-orders', label: 'My Orders' }] : []),
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+    ...(user
+      ? [{ action: logout, label: 'Logout' }]
+      : [
+          { to: '/login', label: 'Login' },
+          { to: '/signup', label: 'Signup' }
+        ]),
+  ];
+
+  const drawer = (
+    <Box onClick={toggleDrawer} sx={{ width: 250 }}>
+      <Typography variant="h6" sx={{ p: 2 }}>
+        🛒 My Online Store
+      </Typography>
+      <Divider />
+      <List>
+        {navLinks.map((link, index) => (
+          <ListItem
+            button
+            key={index}
+            component={link.to ? Link : 'button'}
+            to={link.to}
+            onClick={link.action || undefined}
+          >
+            <ListItemText primary={link.label} />
+          </ListItem>
+        ))}
+      </List>
+    </Box>
   );
-}
+
+  return (
+    <>
+      <AppBar position="sticky" sx={{ zIndex: 1300 }}>
+        <Toolbar sx={{ justifyContent: 'space-between' }}>
+          <Box display="flex" alignItems="center" gap={2}>
+            {isMobile && (
+              <IconButton
+                edge="start"
+                color="inherit"
+                aria-label="menu"
+                onClick={toggleDrawer}
+              >
+                <MenuIcon />
+              </IconButton>
+            )}
+            <Typography
+              variant="h6"
+              component={Link}
+              to="/"
+              sx={{ textDecoration: 'none', color: 'inherit' }}
+            >
+              My Online Store
+            </Typography>
+          </Box>
+
+          {!isMobile && (
+            <Box display="flex" gap={1} alignItems="center">
+              {navLinks.map((link, index) =>
+                link.to ? (
+                  <Button
+                    key={index}
+                    color="inherit"
+                    component={Link}
+                    to={link.to}
+                  >
+                    {link.label}
+                  </Button>
+                ) : (
+                  <Button key={index} color="inherit" onClick={link.action}>
+                    {link.label}
+                  </Button>
+                )
+              )}
+              <CartButton />
+            </Box>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      <Drawer
+        anchor="left"
+        open={mobileOpen}
+        onClose={toggleDrawer}
+        ModalProps={{ keepMounted: true }}
+      >
+        {drawer}
+      </Drawer>
+    </>
+  );
+};
+
+export default Navbar;
