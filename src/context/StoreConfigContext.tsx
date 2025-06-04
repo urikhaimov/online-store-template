@@ -1,33 +1,18 @@
-// src/context/StoreConfigContext.tsx
-import React, { createContext, useContext } from 'react';
+import { createContext } from 'react';
+import type { StoreConfig } from '../types/StoreConfig';
 
-type StoreConfig = {
-  storeName: string;
-  primaryColor: string;
-  logoUrl?: string;
+// A safe fallback config that satisfies all required fields
+export const defaultConfig: StoreConfig = {
+  storeId: 'default-store',
+  storeName: 'Default Store',
+  primaryColor: '#1976d2',
+  logoUrl: '/assets/default-logo.svg',
+  font: 'Arial',
+  layout: 'grid',
+  currency: 'USD',
+  stripeKey: 'pk_test_default_123456',
+  mode: 'light',
 };
 
-const defaultConfig: StoreConfig = {
-  storeName: 'My Online Store',
-  primaryColor: '#1976d2', // MUI primary blue
-};
-
+// Non-nullable context (no need for null checks in components)
 export const StoreConfigContext = createContext<StoreConfig>(defaultConfig);
-
-export const useStoreConfig = () => useContext(StoreConfigContext);
-
-type StoreConfigProviderProps = {
-  children: React.ReactNode;
-  config?: Partial<StoreConfig>;
-};
-
-export const StoreConfigProvider: React.FC<StoreConfigProviderProps> = ({ children, config = {} }) => {
-  const mergedConfig = { ...defaultConfig, ...config };
-
-  return (
-    <StoreConfigContext.Provider value={mergedConfig}>
-      {children}
-    </StoreConfigContext.Provider>
-  );
-};
-export default StoreConfigContext;

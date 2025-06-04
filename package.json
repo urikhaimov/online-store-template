@@ -23,7 +23,7 @@
     "faker": "^6.6.6",
     "firebase": "^11.8.1",
     "firebase-admin": "^13.4.0",
-    "framer-motion": "^12.15.0",
+    "framer-motion": "^12.16.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.57.0",

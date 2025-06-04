@@ -7,4 +7,5 @@ export interface StoreConfig {
   layout: 'grid' | 'list';
   currency: string;
   stripeKey: string;
+  mode?: 'light' | 'dark'; // optional for dark mode support
 }

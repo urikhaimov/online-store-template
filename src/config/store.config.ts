@@ -1,6 +1,5 @@
-// src/config/stores.config.ts
-import type { StoreConfig } from '../types/StoreConfig';
 
+import { StoreConfig } from '../types/StoreConfig';
 export const storesConfig: Record<string, StoreConfig> = {
   'tech-store': {
     storeId: 'tech-store',
@@ -11,6 +10,7 @@ export const storesConfig: Record<string, StoreConfig> = {
     layout: 'grid',
     currency: 'USD',
     stripeKey: 'pk_test_tech_1234',
+    mode: 'light',
   },
   'fashion-boutique': {
     storeId: 'fashion-boutique',
@@ -21,5 +21,6 @@ export const storesConfig: Record<string, StoreConfig> = {
     layout: 'list',
     currency: 'EUR',
     stripeKey: 'pk_test_fashion_5678',
+    mode: 'dark',
   },
 };
