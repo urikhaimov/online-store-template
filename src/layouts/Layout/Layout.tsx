@@ -17,11 +17,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       }}
     >
 
-      <AppBar position="sticky" sx={{ zIndex: 1300, width: '100%' }}>
-        <Toolbar>
-       
-        </Toolbar>
-      </AppBar>
+     
       <Box sx={{ minHeight: '100vh', width: '100vw' }}>
         <Navbar />
       {/* Main */}
