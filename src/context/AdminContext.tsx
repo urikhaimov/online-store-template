@@ -8,7 +8,7 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export const AdminProvider = ({ children }: { children: ReactNode }) => {
   const { user } = getSafeAuth();
-  const isAdmin = user?.firebaseUser.email === 'admin@example.com'; // or use a claim/check
+  const isAdmin = user?.email === 'admin@example.com'; // or use a claim/check
 
   return (
     <AdminContext.Provider value={{ isAdmin }}>

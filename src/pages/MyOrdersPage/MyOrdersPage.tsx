@@ -37,8 +37,8 @@ export default function MyOrdersPage() {
   const queryClient = useQueryClient();
 
   const { data, isLoading, error } = useQuery<Order[], Error>({
-    queryKey: ['orders', user?.firebaseUser.uid],
-    queryFn: () => fetchUserOrders(user!.firebaseUser.uid),
+    queryKey: ['orders', user?.id],
+    queryFn: () => fetchUserOrders(user!.id),
     enabled: !!user,
   });
 
@@ -47,7 +47,7 @@ export default function MyOrdersPage() {
       await deleteDoc(doc(db, 'orders', orderId));
     },
     onSuccess: (_, orderId) => {
-      queryClient.invalidateQueries({ queryKey: ['orders', user?.firebaseUser.uid] });
+      queryClient.invalidateQueries({ queryKey: ['orders', user?.id] });
       toast.success(`Order ${orderId} canceled`);
     },
     onError: (err) => {

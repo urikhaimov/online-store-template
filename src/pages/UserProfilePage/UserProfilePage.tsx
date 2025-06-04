@@ -15,13 +15,13 @@ export default function UserProfilePage() {
           My Profile
         </Typography>
         <Typography variant="body1">
-          <strong>Display Name:</strong> {user?.firebaseUser.displayName || 'N/A'}
+          <strong>Display Name:</strong> {user?.name || 'N/A'}
         </Typography>
         <Typography variant="body1">
-          <strong>Email:</strong> {user?.firebaseUser.email}
+          <strong>Email:</strong> {user?.email}
         </Typography>
         <Typography variant="body1">
-          <strong>UID:</strong> {user?.firebaseUser.uid}
+          <strong>UID:</strong> {user?.id}
         </Typography>
       </Paper>
     </Box>

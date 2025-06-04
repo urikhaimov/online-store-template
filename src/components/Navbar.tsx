@@ -34,7 +34,7 @@ if (!auth) {
             <Button color="inherit" component={Link} to="/profile">
               Profile
             </Button>
-            {user?.firebaseUser.email === 'admin@example.com' && (
+            {user?.email === 'admin@example.com' && (
               <Button color="inherit" component={Link} to="/admin/orders">
                 Admin Orders
               </Button>

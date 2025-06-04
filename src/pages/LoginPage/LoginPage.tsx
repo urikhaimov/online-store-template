@@ -1,98 +1,80 @@
-import { useForm } from 'react-hook-form';
-import { Box, Button, TextField, Typography } from '@mui/material';
-import { getSafeAuth } from '../../hooks/getSafeAuth';
+import React, { useState } from 'react';
+import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Button,
+  Container,
+  TextField,
+  Typography,
+  Alert,
+  CircularProgress,
+} from '@mui/material';
 
-export default function LoginPage() {
-  const { login, signup, user, logout } = getSafeAuth();
-  const loginForm = useForm();
-  const signupForm = useForm();
+const LoginPage = () => {
+  const { login } = useAuth();
+  const navigate = useNavigate();
 
-  const onLogin = async (data: any) => {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+
     try {
-      await login(data.email, data.password);
-      loginForm.reset();
-      alert('Login successful!');
+      await login(email, password);
+      navigate('/'); // Redirect to homepage or dashboard
     } catch (err: any) {
-      console.error('Login error:', err.code, err.message);
-      alert(`Login failed: ${err.message}`);
-    }
-  };
-
-  const onSignup = async (data: any) => {
-    try {
-      await signup(data.email, data.password);
-      signupForm.reset();
-      alert('Signup successful!');
-    } catch (err: any) {
-      console.error('Signup error:', err.code, err.message);
-      alert(`Signup failed: ${err.message}`);
+      setError(err.message || 'Login failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Login
-      </Typography>
-
-      {user ? (
-        <Box>
-          <Typography>Welcome, {user?.firebaseUser.email}</Typography>
-          <Button variant="contained" color="secondary" onClick={logout} sx={{ mt: 2 }}>
-            Logout
+    <Container maxWidth="xs">
+      <Box mt={8} display="flex" flexDirection="column" alignItems="center">
+        <Typography component="h1" variant="h5" mb={2}>
+          Login
+        </Typography>
+        {error && <Alert severity="error">{error}</Alert>}
+        <Box component="form" onSubmit={handleSubmit} width="100%" mt={2}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
+          />
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+          />
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{ mt: 2, mb: 2 }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} /> : 'Sign In'}
           </Button>
         </Box>
-      ) : (
-        <>
-          <form onSubmit={loginForm.handleSubmit(onLogin)}>
-            <TextField
-              label="Email"
-              {...loginForm.register('email')}
-              fullWidth
-              margin="normal"
-              type="email"
-              required
-            />
-            <TextField
-              label="Password"
-              type="password"
-              {...loginForm.register('password')}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <Button type="submit" variant="contained" fullWidth sx={{ mt: 1 }}>
-              Login
-            </Button>
-          </form>
-
-          <Typography variant="h6" mt={3}>
-            Or Sign Up:
-          </Typography>
-
-          <form onSubmit={signupForm.handleSubmit(onSignup)}>
-            <TextField
-              label="Email"
-              {...signupForm.register('email')}
-              fullWidth
-              margin="normal"
-              type="email"
-              required
-            />
-            <TextField
-              label="Password"
-              type="password"
-              {...signupForm.register('password')}
-              fullWidth
-              margin="normal"
-              required
-            />
-            <Button type="submit" variant="contained" fullWidth sx={{ mt: 1 }}>
-              Sign Up
-            </Button>
-          </form>
-        </>
-      )}
-    </Box>
+      </Box>
+    </Container>
   );
-}
+};
+
+export default LoginPage;

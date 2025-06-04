@@ -34,5 +34,5 @@ export const getSafeAuth = (): SafeAuth => {
     };
   }
 
-  return context;
+  return context as SafeAuth;
 };
