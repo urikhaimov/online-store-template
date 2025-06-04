@@ -1,30 +1,39 @@
+// src/components/Navbar.tsx
 import React from 'react';
-import { NavLink, NavLinkProps } from 'react-router-dom';
-import { Button, ButtonProps } from '@mui/material';
+import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import CartButton from './CartButton';
 
-type NavButtonLinkProps = ButtonProps & {
-  to: string;
-};
+const Navbar = () => {
+  const { user, logout, isAdmin } = useAuth();
 
-const NavButtonLink: React.FC<NavButtonLinkProps> = ({ to, children, ...props }) => {
   return (
-    <NavLink to={to}>
-      {({ isActive }) => (
-        <Button
-          {...props}
-          sx={{
-            color: 'white',
-            opacity: isActive ? 1 : 0.7,
-            fontWeight: isActive ? 600 : 400,
-            textTransform: 'none',
-            ...props.sx,
-          }}
-        >
-          {children}
-        </Button>
-      )}
-    </NavLink>
+    <AppBar position="sticky" sx={{ zIndex: 1300 }}>
+      <Toolbar sx={{ justifyContent: 'space-between' }}>
+        <Typography variant="h6" component={Link} to="/" sx={{ color: '#fff', textDecoration: 'none' }}>
+          🛒 My Online Store
+        </Typography>
+
+        <Box display="flex" alignItems="center" gap={1}>
+          <Button color="inherit" component={Link} to="/">Home</Button>
+          <Button color="inherit" component={Link} to="/cart">Cart</Button>
+          <Button color="inherit" component={Link} to="/checkout">Checkout</Button>
+          {user && <Button color="inherit" component={Link} to="/my-orders">My Orders</Button>}
+          {isAdmin && <Button color="inherit" component={Link} to="/admin">Admin</Button>}
+          {user ? (
+            <Button color="inherit" onClick={logout}>Logout</Button>
+          ) : (
+            <>
+              <Button color="inherit" component={Link} to="/login">Login</Button>
+              <Button color="inherit" component={Link} to="/signup">Signup</Button>
+            </>
+          )}
+          <CartButton />
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 
-export default NavButtonLink;
+export default Navbar;

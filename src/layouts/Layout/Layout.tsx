@@ -1,7 +1,7 @@
 // src/layouts/Layout.tsx
 import React from 'react';
 import { AppBar, Toolbar, Box, Typography } from '@mui/material';
-
+import Navbar from '../../components/Navbar'; // Adjust the import path as necessary
 const Layout = ({ children }: { children: React.ReactNode }) => {
   return (
     <Box
@@ -15,12 +15,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
         p: 0,
       }}
     >
-      {/* Top Bar */}
+     
       <AppBar position="sticky" sx={{ zIndex: 1300, width: '100%' }}>
         <Toolbar>
-          <Typography variant="h6" sx={{ flexGrow: 1 }}>
-            🛒 My Online Store
-          </Typography>
+          <Navbar />
         </Toolbar>
       </AppBar>
 
