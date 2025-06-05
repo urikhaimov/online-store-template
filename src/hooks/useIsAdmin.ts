@@ -1,5 +1,11 @@
-import { getSafeAuth } from '../hooks/getSafeAuth';
+// src/hooks/useIsAdmin.ts
+import { useSafeAuth } from './getSafeAuth';
+
+/**
+ * Hook that returns whether the current user is an admin.
+ * @returns {boolean} True if the user has admin role, otherwise false.
+ */
 export const useIsAdmin = (): boolean => {
-  const { user } = getSafeAuth();
-  return user?.role === 'admin';
+  const { isAdmin } = useSafeAuth();
+  return isAdmin;
 };

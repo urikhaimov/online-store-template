@@ -13,15 +13,15 @@ import {
   ListItemText,
   Divider,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuthStore } from '../stores/useAuthStore';
 import CartButton from './CartButton';
 
 const Navbar = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const theme = useTheme();
@@ -29,7 +29,11 @@ const Navbar = () => {
 
   const toggleDrawer = () => setMobileOpen(!mobileOpen);
 
-  const navLinks = [
+  const navLinks: {
+    to?: string;
+    label: string;
+    action?: () => void;
+  }[] = [
     { to: '/', label: 'Home' },
     { to: '/cart', label: 'Cart' },
     { to: '/checkout', label: 'Checkout' },
@@ -39,7 +43,7 @@ const Navbar = () => {
       ? [{ action: logout, label: 'Logout' }]
       : [
           { to: '/login', label: 'Login' },
-          { to: '/signup', label: 'Signup' }
+          { to: '/signup', label: 'Signup' },
         ]),
   ];
 
@@ -52,11 +56,11 @@ const Navbar = () => {
       <List>
         {navLinks.map((link, index) => (
           <ListItem
-            button
             key={index}
+            button
             component={link.to ? Link : 'button'}
-            to={link.to}
-            onClick={link.action || undefined}
+            to={link.to as string}
+            onClick={link.action}
           >
             <ListItemText primary={link.label} />
           </ListItem>

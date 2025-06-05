@@ -1,8 +1,12 @@
-import { useContext } from 'react';
-import { AuthContext} from '../context/AuthContext';
-import { UserCredential } from 'firebase/auth';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  UserCredential,
+} from 'firebase/auth';
+import { auth } from '../firebase';
+import { useAuthStore } from '../stores/useAuthStore';
 import { AppUser } from '../types/AppUser';
-
 
 export interface SafeAuth {
   user: AppUser | null;
@@ -13,8 +17,29 @@ export interface SafeAuth {
   logout: () => Promise<void>;
 }
 
-export function getSafeAuth(): SafeAuth {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('Must be used inside AuthProvider');
-  return context as unknown as SafeAuth;
+export function useSafeAuth(): SafeAuth {
+  const { user, loading } = useAuthStore();
+
+  const isAdmin = user?.role === 'admin';
+
+  const login = async (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signup = async (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const logout = async () => {
+    return signOut(auth);
+  };
+
+  return {
+    user,
+    loading,
+    isAdmin,
+    login,
+    signup,
+    logout,
+  };
 }

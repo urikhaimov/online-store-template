@@ -1,26 +1,20 @@
-import { createContext, useContext, ReactNode } from 'react';
-import { getSafeAuth } from '../hooks/getSafeAuth';
-interface AdminContextType {
-  isAdmin: boolean;
-}
+// context/AdminContext.tsx
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-const AdminContext = createContext<AdminContextType | undefined>(undefined);
+const AdminContext = createContext<any>(undefined);
 
-export const AdminProvider = ({ children }: { children: ReactNode }) => {
-  const { user } = getSafeAuth();
-  const isAdmin = user?.email === 'admin@example.com'; // or use a claim/check
+export function AdminProvider({ children }: { children: ReactNode }) {
+  const [adminState, setAdminState] = useState({ /* your admin state */ });
 
   return (
-    <AdminContext.Provider value={{ isAdmin }}>
+    <AdminContext.Provider value={{ adminState, setAdminState }}>
       {children}
     </AdminContext.Provider>
   );
-};
+}
 
-export const useAdmin = () => {
+export function useAdmin() {
   const context = useContext(AdminContext);
-  if (!context) {
-    throw new Error('useAdmin must be used inside AdminProvider');
-  }
+  if (!context) throw new Error('useAdmin must be used inside AdminProvider');
   return context;
-};
+}

@@ -1,25 +1,17 @@
 {
-  "name": "functions",
-  "description": "Cloud Functions for Firebase",
+  "name": "functions-admin",
+
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
-    "serve": "firebase emulators:start --only functions",
-    "deploy": "firebase deploy --only functions"
+    "setRole": "ts-node src/setRole.js"
   },
-  "engines": {
-    "node": "18"
-  },
-  "main": "lib/index.js",
   "dependencies": {
-    "@google-cloud/storage": "^6.9.0",
-    "cors": "^2.8.5",
-    "firebase-admin": "^11.11.0",
-    "firebase-functions": "^6.3.2",
-    "stripe": "^12.18.0"
+    "dotenv": "^16.3.1",
+    "firebase-admin": "^11.10.1"
   },
   "devDependencies": {
-    "typescript": "^5.1.6"
-  },
-  "private": true
+    "@types/node": "^20.4.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  }
 }

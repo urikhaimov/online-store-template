@@ -1,8 +1,9 @@
-// src/types/AppUser.ts
+
+import type { Role } from './Role';
 
 export interface AppUser {
   id: string;
-  name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: Role;
+  name: string; // ✅ Optional property
 }

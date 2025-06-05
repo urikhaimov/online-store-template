@@ -1,12 +1,19 @@
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { AuthContext, AuthContextType } from '../context/AuthContext';
 
-export const useAuthSafe = () => {
-  try {
-    const context = useContext(AuthContext);
-    return context || null;
-  } catch (err) {
-    console.warn('⚠ useAuthSafe called outside AuthProvider, returning null.');
-    return null;
+export const useAuthSafe = (): AuthContextType => {
+  const context = useContext(AuthContext);
+
+  if (!context) {
+    console.warn('⚠ useAuthSafe called outside AuthProvider, returning fallback');
+    return {
+      user: null,
+      loading: true,
+      login: async () => {},
+      signup: async () => {},
+      logout: async () => {},
+    };
   }
+
+  return context;
 };

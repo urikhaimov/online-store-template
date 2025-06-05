@@ -1,78 +1,66 @@
-// src/context/AuthContext.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useEffect, useState, ReactNode } from 'react';
 import {
+  onAuthStateChanged,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
-  onAuthStateChanged,
-  User,
+  getIdTokenResult,
 } from 'firebase/auth';
 import { auth } from '../firebase';
 import { AppUser } from '../types/AppUser';
-import { UserCredential } from 'firebase/auth';
-
-
+import { Role } from '../types/Role';
 
 export interface AuthContextType {
   user: AppUser | null;
-  login: (email: string, password: string) => Promise<UserCredential>;
-  signup: (email: string, password: string) => Promise<UserCredential>;
-  logout: () => Promise<void>;
   loading: boolean;
-  isAdmin: boolean;
+  login: (email: string, password: string) => Promise<void>;
+  signup: (email: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+export const AuthContext = createContext<AuthContextType | null>(null);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<AppUser | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const login = (email: string, password: string) =>
-    signInWithEmailAndPassword(auth, email, password);
-
-  const logout = () => signOut(auth);
-
-  const signup = (email: string, password: string) =>
-    createUserWithEmailAndPassword(auth, email, password);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        const tokenResult = await firebaseUser.getIdTokenResult();
-        const customClaims = tokenResult.claims;
+        const token = await getIdTokenResult(firebaseUser);
+        const rawRole = token.claims.role;
+        const role: Role = rawRole === 'admin' ? 'admin' : 'user';
 
-        const userData: AppUser = {
+        setUser({
           id: firebaseUser.uid,
           name: firebaseUser.displayName || '',
           email: firebaseUser.email || '',
-          role: customClaims?.role === 'admin' ? 'admin' : 'user',
-        };
-
-        setUser(userData);
+          role,
+        });
       } else {
         setUser(null);
       }
-
       setLoading(false);
     });
 
     return () => unsubscribe();
   }, []);
 
-  const isAdmin = user?.role === 'admin';
+  const login = async (email: string, password: string) => {
+    await signInWithEmailAndPassword(auth, email, password);
+  };
+
+  const signup = async (email: string, password: string) => {
+    await createUserWithEmailAndPassword(auth, email, password);
+  };
+
+  const logout = async () => {
+    await signOut(auth);
+  };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, signup, loading, isAdmin }}>
+    <AuthContext.Provider value={{ user, loading, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );
 };
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error('useAuth must be used inside AuthProvider');
-  return context;
-};
-
-export { AuthContext };

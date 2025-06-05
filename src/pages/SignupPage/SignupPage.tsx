@@ -1,12 +1,12 @@
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate, Link } from 'react-router-dom';
-import { getSafeAuth } from '../../hooks/getSafeAuth';
+import { useSafeAuth } from '../../hooks/getSafeAuth';
 import { Box, Button, TextField, Typography, Paper } from '@mui/material';
 
 export default function SignupPage() {
   const { register, handleSubmit, reset } = useForm();
-  const { signup } = getSafeAuth();
+  const { signup } = useSafeAuth();
   const navigate = useNavigate();
 const onSubmit = async (data: any) => {
     try {

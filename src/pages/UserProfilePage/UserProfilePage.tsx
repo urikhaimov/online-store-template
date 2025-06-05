@@ -1,8 +1,8 @@
 import { Box, Typography, Paper } from '@mui/material';
 
-import { getSafeAuth } from '../../hooks/getSafeAuth';
+import { useSafeAuth } from '../../hooks/getSafeAuth';
 export default function UserProfilePage() {
-  const { user } = getSafeAuth();
+  const { user } = useSafeAuth();
 
   if (!user) {
     return <Typography variant="h6">No user data available.</Typography>;

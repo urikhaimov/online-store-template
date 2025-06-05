@@ -1,6 +1,4 @@
 import React, { useEffect, useState, KeyboardEvent } from 'react';
-import { useCategories } from '../../../context/CategoriesContext';
-import { useAdmin } from '../../../context/AdminContext';
 import {
   fetchCategories,
   addCategory,
@@ -17,40 +15,40 @@ import {
   IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
+import { useCategoriesStore } from '../../../stores/useCategoriesStore';
+import { useAuthStore } from '../../../stores/useAuthStore';
 
 export default function AdminDashboardPage() {
-  const { state, dispatch } = useCategories();
-  const { isAdmin } = useAdmin();
+  const { categories, setCategories, addCategoryToState, removeCategoryFromState } =
+    useCategoriesStore();
+  const user = useAuthStore((s) => s.user);
+  const isAdmin = user?.role === 'admin';
+  console.log('isAdmin:', isAdmin);
   const [newCategory, setNewCategory] = useState('');
 
   useEffect(() => {
     async function loadCategories() {
       const data = await fetchCategories();
-      // Ensure data is an array of full Category objects
-      const mappedData = data.map(doc => ({
+      const mappedData = data.map((doc) => ({
         id: doc.id,
-        name: doc.name, // make sure doc has 'name' field!
+        name: doc.name,
       }));
-      dispatch({ type: 'SET_CATEGORIES', payload: mappedData });
+      setCategories(mappedData);
     }
     loadCategories();
-  }, [dispatch]);
-
+  }, [setCategories]);
 
   const handleAddCategory = async () => {
     if (newCategory.trim()) {
       const id = await addCategory(newCategory);
-      dispatch({
-        type: 'ADD_CATEGORY',
-        payload: { id, name: newCategory },
-      });
+      addCategoryToState({ id, name: newCategory });
       setNewCategory('');
     }
   };
 
   const handleDeleteCategory = async (id: string) => {
     await deleteCategory(id);
-    dispatch({ type: 'REMOVE_CATEGORY', payload: id });
+    removeCategoryFromState(id);
   };
 
   const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -59,14 +57,19 @@ export default function AdminDashboardPage() {
     }
   };
 
-  if (!isAdmin) {
-    return <Typography>You do not have access to this page.</Typography>;
-  }
+ if (user === null) {
+  return <Typography>Loading...</Typography>; // waiting for auth load
+}
+
+if (user && user.role !== 'admin') {
+  return <Typography>You do not have access to this page.</Typography>;
+}
+  
 
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
-        Admin Dashboard - Categories
+        Admin Dashboard – Categories
       </Typography>
 
       <Box display="flex" mb={2}>
@@ -88,7 +91,7 @@ export default function AdminDashboardPage() {
       </Box>
 
       <List>
-        {state.categories.map((cat) => (
+        {categories.map((cat) => (
           <ListItem
             key={cat.id}
             secondaryAction={

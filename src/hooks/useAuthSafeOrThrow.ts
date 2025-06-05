@@ -1,8 +1,8 @@
 import { useContext } from 'react';
-import { AuthContext } from '../context/AuthContext';
+import { useAuthStore } from '../stores/useAuthStore';
 
 export const useAuthSafeOrThrow = () => {
-  const context = useContext(AuthContext);
+  const context = useAuthStore();
 
   if (!context) {
     throw new Error('❌ useAuthSafeOrThrow was called outside of an <AuthProvider>. Make sure your component tree is wrapped properly.');

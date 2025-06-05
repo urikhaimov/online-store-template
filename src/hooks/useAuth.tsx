@@ -1,35 +1,40 @@
-import { useEffect, useState } from 'react';
-import { onAuthStateChanged, User } from 'firebase/auth';
-import { auth } from '../api/firebase';
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, UserCredential } from 'firebase/auth';
+import { auth } from '../firebase';
+import { useAuthStore } from '../stores/useAuthStore';
 import { AppUser } from '../types/AppUser';
 
-export function useAuth() {
-  const [user, setUser] = useState<AppUser | null>(null);
-  const [loading, setLoading] = useState(true);
+export interface SafeAuth {
+  user: AppUser | null;
+  loading: boolean;
+  isAdmin: boolean;
+  login: (email: string, password: string) => Promise<UserCredential>;
+  signup: (email: string, password: string) => Promise<UserCredential>;
+  logout: () => Promise<void>;
+}
 
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
-      if (firebaseUser) {
-        const idTokenResult = await firebaseUser.getIdTokenResult();
-        const customClaims = idTokenResult.claims;
+export function useSafeAuth(): SafeAuth {
+  const { user, loading } = useAuthStore();
 
-        const userData: AppUser = {
-          id: firebaseUser.uid,
-          name: firebaseUser.displayName ?? '',
-          email: firebaseUser.email ?? '',
-          role: (customClaims?.role as 'user' | 'admin') ?? 'user',
-        };
+  const isAdmin = user?.role === 'admin';
 
-        setUser(userData);
-      } else {
-        setUser(null);
-      }
+  const login = async (email: string, password: string) => {
+    return signInWithEmailAndPassword(auth, email, password);
+  };
 
-      setLoading(false);
-    });
+  const signup = async (email: string, password: string) => {
+    return createUserWithEmailAndPassword(auth, email, password);
+  };
 
-    return () => unsubscribe();
-  }, []);
+  const logout = async () => {
+    return signOut(auth);
+  };
 
-  return { user, loading };
+  return {
+    user,
+    loading,
+    isAdmin,
+    login,
+    signup,
+    logout,
+  };
 }

@@ -1,13 +1,13 @@
 import React, { ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 
+import { useSafeAuth } from '../hooks/getSafeAuth';
 interface Props {
    children: ReactNode;
 }
 
 const PrivateRoute = ({ children }: Props) => {
-  const { user } = useAuth();
+  const { user } = useSafeAuth();
 
   if (!user) {
     return <Navigate to="/login" replace />;

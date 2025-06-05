@@ -1,17 +1,32 @@
-import { useAuthSafe } from '../../hooks/useAuthSafe';
+// src/pages/MyOrdersPage/MyOrdersPage.tsx
+import React from 'react';
+import {
+  Box,
+  Typography,
+  Paper,
+  CircularProgress,
+  Button,
+} from '@mui/material';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { collection, query, where, getDocs, deleteDoc, doc } from 'firebase/firestore';
+import {
+  collection,
+  query,
+  where,
+  getDocs,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
 import { db } from '../../api/firebase';
 import { useCartStore } from '../../store/cartStore';
-import { Box, Typography, Paper, CircularProgress, Button } from '@mui/material';
 import { toast } from 'react-toastify';
-import { getSafeAuth } from '../../hooks/getSafeAuth';
+import { useSafeAuth } from '../../hooks/getSafeAuth';
+
 interface OrderItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
-  stock: number; // add this for cart compatibility
+  stock: number;
 }
 
 interface Order {
@@ -32,7 +47,7 @@ const fetchUserOrders = async (uid: string): Promise<Order[]> => {
 };
 
 export default function MyOrdersPage() {
-  const { user } = getSafeAuth();
+  const { user } = useSafeAuth();
   const cart = useCartStore();
   const queryClient = useQueryClient();
 
@@ -50,14 +65,14 @@ export default function MyOrdersPage() {
       queryClient.invalidateQueries({ queryKey: ['orders', user?.id] });
       toast.success(`Order ${orderId} canceled`);
     },
-    onError: (err) => {
+    onError: (err: any) => {
       toast.error(`Failed to cancel order: ${err.message}`);
     },
   });
 
   const handleReorder = (order: Order) => {
     order.items.forEach((item) => {
-      cart.addToCart({ ...item, stock: item.stock || 100 }); // fallback stock if missing
+      cart.addToCart({ ...item, stock: item.stock || 100 });
     });
     toast.success('Items added back to cart!');
   };
@@ -66,6 +81,7 @@ export default function MyOrdersPage() {
     cancelOrderMutation.mutate(orderId);
   };
 
+  if (!user) return <Typography>Loading user...</Typography>;
   if (isLoading) return <CircularProgress />;
   if (error) return <Typography>Error loading orders: {error.message}</Typography>;
   if (!data || data.length === 0) return <Typography>No orders found.</Typography>;
@@ -75,22 +91,34 @@ export default function MyOrdersPage() {
       <Typography variant="h4" gutterBottom>
         My Orders
       </Typography>
-      {data.map((order: Order) => (
+      {data.map((order) => (
         <Paper key={order.id} sx={{ p: 2, mb: 2 }}>
           <Typography variant="h6">Order ID: {order.id}</Typography>
-          <Typography variant="body2">Date: {new Date(order.createdAt).toLocaleString()}</Typography>
-          <Typography variant="body1">Total: ${order.total.toFixed(2)}</Typography>
+          <Typography variant="body2">
+            Date: {new Date(order.createdAt).toLocaleString()}
+          </Typography>
+          <Typography variant="body1">
+            Total: ${order.total.toFixed(2)}
+          </Typography>
           <ul>
-            {order.items.map((item: OrderItem) => (
+            {order.items.map((item) => (
               <li key={item.id}>
                 {item.name} x {item.quantity} — ${item.price.toFixed(2)}
               </li>
             ))}
           </ul>
-          <Button variant="outlined" onClick={() => handleReorder(order)} sx={{ mr: 1 }}>
+          <Button
+            variant="outlined"
+            onClick={() => handleReorder(order)}
+            sx={{ mr: 1 }}
+          >
             Reorder
           </Button>
-          <Button variant="contained" color="error" onClick={() => handleCancel(order.id)}>
+          <Button
+            variant="contained"
+            color="error"
+            onClick={() => handleCancel(order.id)}
+          >
             Cancel Order
           </Button>
         </Paper>

@@ -2,11 +2,11 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import CartButton from './CartButton';
 
+import CartButton from './CartButton';
+import { useAuthStore } from '../stores/useAuthStore';
 const Navbar = () => {
-  const { user, logout, isAdmin } = useAuth();
+  const { user, logout, isAdmin } = useAuthStore();
 
   return (
     <AppBar position="sticky" sx={{ zIndex: 1300 }}>
