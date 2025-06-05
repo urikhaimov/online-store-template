@@ -1,10 +1,11 @@
 import { User, UserCredential } from 'firebase/auth';
 
 export interface AppUser {
-  firebaseUser: User;
-  role: string;
+  id: string;
+  name: string;
+  email: string;
+  role: 'user' | 'admin';
 }
-
 export interface AuthContextType {
   user: AppUser | null;
   loading: boolean;

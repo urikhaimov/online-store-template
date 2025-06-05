@@ -1,44 +1,29 @@
-import { Navigate } from 'react-router-dom';
-import { useAuthSafe } from '../hooks/useAuthSafe';
-import { getSafeAuth } from '../hooks/getSafeAuth';
-import { CircularProgress, Box, Typography } from '@mui/material';
-import { useIsAdmin } from '../hooks/useIsAdmin';
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = getSafeAuth();
+import React, { ReactNode } from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { useRedirect } from '../context/RedirectContext';
 
-  if (loading) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-        <CircularProgress />
-      </Box>
-    );
-  }
+export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
+  const location = useLocation();
+  const { setRedirectTo } = useRedirect();
 
   if (!user) {
-    return <Navigate to="/login" replace />;
+    setRedirectTo(location.pathname);
+    return <Navigate to={`/login?redirect=${location.pathname}`} replace />;
   }
 
-  return <>{children}</>;
+  return children;
 };
 
 export const AdminProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const { user, loading } = getSafeAuth();
-  const isAdmin = useIsAdmin();
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  const { user } = useAuth();
+  const location = useLocation();
+  const isAdmin = user?.email === 'admin@example.com';
 
-  if (!user) {
-    return <div>Please log in</div>;
-  }
-
-  if (!isAdmin) {
-    return (
-      <Box sx={{ textAlign: 'center', mt: 4 }}>
-        <Typography variant="h5">Access Denied</Typography>
-        <Typography>You do not have admin permissions.</Typography>
-      </Box>
-    );
+  if (!user || !isAdmin) {
+    const redirect = encodeURIComponent(location.pathname);
+    return <Navigate to={`/login?redirect=${redirect}`} />;
   }
 
   return <>{children}</>;

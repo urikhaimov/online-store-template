@@ -1,79 +1,65 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import React from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Button,
-  Container,
   TextField,
   Typography,
-  Alert,
-  CircularProgress,
+  Stack,
 } from '@mui/material';
+import { useAuth } from '../../context/AuthContext';
 
 const LoginPage = () => {
+  const { register, handleSubmit } = useForm();
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
+  const onSubmit = async (data: any) => {
     try {
-      await login(email, password);
-      navigate('/'); // Redirect to homepage or dashboard
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
+      await login(data.email, data.password);
+      navigate(data.email === 'admin@example.com' ? '/admin' : '/');
+    } catch (error) {
+      console.error('Login failed', error);
     }
   };
 
   return (
-    <Container maxWidth="xs">
-      <Box mt={8} display="flex" flexDirection="column" alignItems="center">
-        <Typography component="h1" variant="h5" mb={2}>
-          Login
-        </Typography>
-        {error && <Alert severity="error">{error}</Alert>}
-        <Box component="form" onSubmit={handleSubmit} width="100%" mt={2}>
+    <Box maxWidth={400} mx="auto" mt={8}>
+      <Typography variant="h5" gutterBottom>
+        Login
+      </Typography>
+      <form onSubmit={handleSubmit(onSubmit)}>
+        <Stack spacing={2}>
           <TextField
-            margin="normal"
-            required
+            label="Email"
+            {...register('email', { required: true })}
             fullWidth
-            label="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            autoComplete="email"
           />
           <TextField
-            margin="normal"
-            required
-            fullWidth
             label="Password"
             type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
+            {...register('password', { required: true })}
+            fullWidth
           />
+          <Button type="submit" variant="contained">
+            Login
+          </Button>
           <Button
             type="submit"
-            fullWidth
-            variant="contained"
-            sx={{ mt: 2, mb: 2 }}
-            disabled={loading}
+            variant="outlined"
+            onClick={() => {
+              handleSubmit(() => {
+                login('admin@example.com', 'adminpassword');
+                navigate('/admin');
+              })();
+            }}
           >
-            {loading ? <CircularProgress size={24} /> : 'Sign In'}
+            Login as Admin
           </Button>
-        </Box>
-      </Box>
-    </Container>
+        </Stack>
+      </form>
+    </Box>
   );
 };
 

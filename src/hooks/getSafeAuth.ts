@@ -1,6 +1,8 @@
 import { useContext } from 'react';
-import { AuthContext, AppUser } from '../context/AuthContext';
+import { AuthContext} from '../context/AuthContext';
 import { UserCredential } from 'firebase/auth';
+import { AppUser } from '../types/AppUser';
+
 
 export interface SafeAuth {
   user: AppUser | null;
@@ -11,28 +13,8 @@ export interface SafeAuth {
   logout: () => Promise<void>;
 }
 
-export const getSafeAuth = (): SafeAuth => {
+export function getSafeAuth(): SafeAuth {
   const context = useContext(AuthContext);
-
-  if (!context) {
-    console.warn('⚠ getSafeAuth called outside AuthProvider, returning safe defaults.');
-    return {
-      user: null,
-      loading: false,
-      isAdmin: false,
-      login: async () => {
-        console.warn('⚠ login called outside AuthProvider');
-        return {} as UserCredential;
-      },
-      signup: async () => {
-        console.warn('⚠ signup called outside AuthProvider');
-        return {} as UserCredential;
-      },
-      logout: async () => {
-        console.warn('⚠ logout called outside AuthProvider');
-      },
-    };
-  }
-
-  return context as SafeAuth;
-};
+  if (!context) throw new Error('Must be used inside AuthProvider');
+  return context as unknown as SafeAuth;
+}
