@@ -1,4 +1,5 @@
-import { Product } from "../../types/Product"; 
+import { Product } from '../../types/firebase';
+
 export type State = {
   products: Product[];
   loading: boolean;

@@ -2,11 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { db } from '../../../../api/firebase';
 import { collection, getDocs, deleteDoc, doc } from 'firebase/firestore';
 import { List, ListItem, ListItemText, Button } from '@mui/material';
+import { Category } from '../../../../types/firebase';
 
-interface Category {
-  id: string;
-  name: string;
-}
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

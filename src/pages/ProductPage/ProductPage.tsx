@@ -15,7 +15,7 @@ import { db } from '../../api/firebase';
 import { createProduct, updateProduct, deleteProduct } from '../../api/products';
 import reducer from './localReducer';
 import { State } from './types';
-import { Product } from '../../types/Product';
+import { Product } from '../../types/firebase';
 
 const initialState: State = {
   products: [],

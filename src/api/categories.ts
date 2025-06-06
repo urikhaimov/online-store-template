@@ -1,30 +1,24 @@
-import { Dispatch } from 'react'
 import { db } from './firebase';
-import {collection,
-  addDoc,
-  deleteDoc,
-  doc,
-  getDocs } from 'firebase/firestore';
+import { collection, getDocs, addDoc,deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { Category } from '../types/firebase';
 
-
-
-export async function fetchCategories() {
+export async function fetchCategories(): Promise<Category[]> {
   const snapshot = await getDocs(collection(db, 'categories'));
-  return snapshot.docs.map(doc => ({
+  return snapshot.docs.map((doc) => ({
     id: doc.id,
-    ...doc.data(),
-  })) as { id: string; name: string }[];
+    ...(doc.data() as Omit<Category, 'id'>),
+  }));
 }
-export const addCategory = async (name: string) => {
-  const docRef = await addDoc(collection(db, 'categories'), { name });
-  return docRef.id;
-};
 
-export const deleteCategory = async (id: string) => {
+export async function addCategory(name: string): Promise<Category> {
+  const docRef = await addDoc(collection(db, 'categories'), { name });
+  return { id: docRef.id, name };
+}
+
+export async function deleteCategory(id: string): Promise<void> {
   await deleteDoc(doc(db, 'categories', id));
-};
-// export const updateCategory = async (id: string, name: string) => {
-//   const categoryRef = doc(db, 'categories', id);
-//   await updateDoc(categoryRef, { name });
-//   return id;
-// };
+}
+export async function updateCategory(id: string, name: string): Promise<void> {
+  const categoryRef = doc(db, 'categories', id);
+  await updateDoc(categoryRef, { name });
+}

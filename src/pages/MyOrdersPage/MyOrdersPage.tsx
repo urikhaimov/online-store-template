@@ -1,4 +1,3 @@
-// src/pages/MyOrdersPage/MyOrdersPage.tsx
 import React from 'react';
 import {
   Box,
@@ -51,10 +50,10 @@ export default function MyOrdersPage() {
   const cart = useCartStore();
   const queryClient = useQueryClient();
 
-  const { data, isLoading, error } = useQuery<Order[], Error>({
+  const { data: orders, isLoading, error } = useQuery<Order[], Error>({
     queryKey: ['orders', user?.id],
     queryFn: () => fetchUserOrders(user!.id),
-    enabled: !!user,
+    enabled: !!user?.id,
   });
 
   const cancelOrderMutation = useMutation({
@@ -71,9 +70,21 @@ export default function MyOrdersPage() {
   });
 
   const handleReorder = (order: Order) => {
+    if (order.items.length === 0) {
+      toast.info('No items to reorder.');
+      return;
+    }
+
     order.items.forEach((item) => {
-      cart.addToCart({ ...item, stock: item.stock || 100 });
+      cart.addToCart({
+        id: item.id,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+        stock: item.stock || 100,
+      });
     });
+
     toast.success('Items added back to cart!');
   };
 
@@ -84,14 +95,15 @@ export default function MyOrdersPage() {
   if (!user) return <Typography>Loading user...</Typography>;
   if (isLoading) return <CircularProgress />;
   if (error) return <Typography>Error loading orders: {error.message}</Typography>;
-  if (!data || data.length === 0) return <Typography>No orders found.</Typography>;
+  if (!orders || orders.length === 0) return <Typography>No orders found.</Typography>;
 
   return (
     <Box>
       <Typography variant="h4" gutterBottom>
         My Orders
       </Typography>
-      {data.map((order) => (
+
+      {orders.map((order) => (
         <Paper key={order.id} sx={{ p: 2, mb: 2 }}>
           <Typography variant="h6">Order ID: {order.id}</Typography>
           <Typography variant="body2">
@@ -100,6 +112,7 @@ export default function MyOrdersPage() {
           <Typography variant="body1">
             Total: ${order.total.toFixed(2)}
           </Typography>
+
           <ul>
             {order.items.map((item) => (
               <li key={item.id}>
@@ -107,6 +120,7 @@ export default function MyOrdersPage() {
               </li>
             ))}
           </ul>
+
           <Button
             variant="outlined"
             onClick={() => handleReorder(order)}
@@ -114,6 +128,7 @@ export default function MyOrdersPage() {
           >
             Reorder
           </Button>
+
           <Button
             variant="contained"
             color="error"

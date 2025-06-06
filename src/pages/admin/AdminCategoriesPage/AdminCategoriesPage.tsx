@@ -17,10 +17,7 @@ import {
   ListItemText,
 } from '@mui/material';
 
-interface Category {
-  id: string;
-  name: string;
-}
+import { Category } from '../../../types/firebase';
 
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);

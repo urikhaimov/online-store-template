@@ -1,12 +1,11 @@
 import { useQuery } from '@tanstack/react-query';
 import { getProducts } from '../api/products';
-import { Product } from '../types/Product';
+import type { Product } from '../types/firebase';
 
 export const useProducts = () => {
-  return useQuery<Product[], Error>({
+  return useQuery<Product[]>({
     queryKey: ['products'],
     queryFn: getProducts,
-    staleTime: 1000 * 60 * 5, // 5 minutes: avoid refetching too often
-    refetchOnWindowFocus: true, // refetch when tab/window regains focus
   });
 };
+// This hook fetches products from the API and returns them along with the query state.

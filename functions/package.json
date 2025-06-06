@@ -6,7 +6,8 @@
   "scripts": {
     "build": "tsc",
     "setRole": "node --loader ts-node/esm src/setAdminRole.ts",
-    "setAdminUser": "node src/setAdminUser.js"
+    "setAdminUser": "node src/setAdminUser.js",
+    "getAllUsers": "node src/getAllUsers.js"
   },
   "dependencies": {
     "dotenv": "^16.5.0",

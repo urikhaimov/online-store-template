@@ -1,70 +1,45 @@
-import React, { useEffect, useState, KeyboardEvent } from 'react';
-import {
-  fetchCategories,
-  addCategory,
-  deleteCategory,
-} from '../../../api/categories';
+import { useState, useEffect } from 'react';
+import { fetchCategories, addCategory, deleteCategory } from '../../../api/categories';
+import { Category } from '../../../types/firebase';
 import {
   Box,
   Typography,
-  TextField,
   Button,
+  TextField,
   List,
   ListItem,
   ListItemText,
   IconButton,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useCategoriesStore } from '../../../stores/useCategoriesStore';
-import { useAuthStore } from '../../../stores/useAuthStore';
 
 export default function AdminDashboardPage() {
-  const { categories, setCategories, addCategoryToState, removeCategoryFromState } =
-    useCategoriesStore();
-  const user = useAuthStore((s) => s.user);
-  const isAdmin = user?.role === 'admin';
-  console.log('isAdmin:', isAdmin);
-  const [newCategory, setNewCategory] = useState('');
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
 
+  // Load existing categories on mount
   useEffect(() => {
-    async function loadCategories() {
-      const data = await fetchCategories();
-      const mappedData = data.map((doc) => ({
-        id: doc.id,
-        name: doc.name,
-      }));
-      setCategories(mappedData);
-    }
-    loadCategories();
-  }, [setCategories]);
+    fetchCategories().then(setCategories);
+  }, []);
 
   const handleAddCategory = async () => {
-    if (newCategory.trim()) {
-      const id = await addCategory(newCategory);
-      addCategoryToState({ id, name: newCategory });
-      setNewCategory('');
-    }
+    if (!newCategoryName.trim()) return;
+
+    const newCat = await addCategory(newCategoryName.trim());
+    setCategories((prev) => [...prev, newCat]);
+    setNewCategoryName('');
   };
 
   const handleDeleteCategory = async (id: string) => {
     await deleteCategory(id);
-    removeCategoryFromState(id);
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
   };
 
-  const handleKeyPress = (e: KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleAddCategory();
     }
   };
-
- if (user === null) {
-  return <Typography>Loading...</Typography>; // waiting for auth load
-}
-
-if (user && user.role !== 'admin') {
-  return <Typography>You do not have access to this page.</Typography>;
-}
-  
 
   return (
     <Box p={3}>
@@ -75,9 +50,9 @@ if (user && user.role !== 'admin') {
       <Box display="flex" mb={2}>
         <TextField
           label="New Category"
-          value={newCategory}
-          onChange={(e) => setNewCategory(e.target.value)}
-          onKeyPress={handleKeyPress}
+          value={newCategoryName}
+          onChange={(e) => setNewCategoryName(e.target.value)}
+          onKeyDown={handleKeyPress}
           fullWidth
         />
         <Button
