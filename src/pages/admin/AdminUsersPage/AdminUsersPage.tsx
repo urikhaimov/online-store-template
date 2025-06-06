@@ -1,18 +1,25 @@
 import { useQuery } from '@tanstack/react-query';
 import { FixedSizeList as List } from 'react-window';
 import { Box, Typography } from '@mui/material';
-
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../../api/firebase'; // Adjust the import path as necessary
 interface User {
   id: string;
   email: string;
   role: string;
 }
 
-const fetchUsers = async (): Promise<User[]> => {
-  const response = await fetch('/api/users'); // adjust to your backend or Firestore fetch
-  if (!response.ok) throw new Error('Failed to fetch users');
-  return response.json();
-};
+export async function fetchUsers(): Promise<User[]> {
+  const snapshot = await getDocs(collection(db, 'users'));
+  return snapshot.docs.map((doc) => {
+    const data = doc.data();
+    return {
+      id: doc.id,
+      email: data.email || '',
+      role: data.role || '',
+    };
+  });
+}
 
 export default function AdminUsersPage() {
   const { data: users = [], isLoading, error } = useQuery({
