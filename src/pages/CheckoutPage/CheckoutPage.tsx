@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useCart } from '../../context/CartContext';
 import {
   Typography,
   Box,
@@ -18,8 +17,9 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { CartItem } from '../../types/CardItem';
+import { useCartStore } from '../../stores/useCartStore';
 
-// Form schema
+// Form validation schema
 const schema = yup.object().shape({
   name: yup.string().required('Name on card is required'),
   cardNumber: yup
@@ -37,7 +37,9 @@ const schema = yup.object().shape({
 });
 
 const CheckoutPage: React.FC = () => {
-  const { state, clearCart } = useCart();
+  const items = useCartStore((state) => state.items);
+  const clearCart = useCartStore((state) => state.clearCart);
+
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -51,13 +53,15 @@ const CheckoutPage: React.FC = () => {
     resolver: yupResolver(schema),
   });
 
-  const total = state.items.reduce((sum: number, item: CartItem) => sum + item.price * item.quantity, 0);
+  const total = items.reduce(
+    (sum: number, item: CartItem) => sum + item.price * item.quantity,
+    0
+  );
 
   const onSubmit = async (data: any) => {
     console.log('Mock payment data:', data);
     setLoading(true);
 
-    // Simulate async Stripe payment (mock)
     setTimeout(() => {
       setLoading(false);
       setSuccess(true);
@@ -67,7 +71,7 @@ const CheckoutPage: React.FC = () => {
     }, 2000);
   };
 
-  if (state.items.length === 0) {
+  if (items.length === 0) {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h5">Your cart is empty.</Typography>
@@ -85,7 +89,7 @@ const CheckoutPage: React.FC = () => {
         Order Summary
       </Typography>
       <List>
-        {state.items.map((item: CartItem) => (
+        {items.map((item: CartItem) => (
           <ListItem key={item.id}>
             <ListItemText
               primary={`${item.name} × ${item.quantity}`}
@@ -151,4 +155,5 @@ const CheckoutPage: React.FC = () => {
     </Box>
   );
 };
+
 export default CheckoutPage;

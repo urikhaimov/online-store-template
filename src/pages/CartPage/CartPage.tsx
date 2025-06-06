@@ -1,5 +1,4 @@
 import React from 'react';
-import { useCart } from '../../context/CartContext';
 import {
   Typography,
   Box,
@@ -8,12 +7,17 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
+import { useCartStore } from '../../stores/useCartStore';
 
 const CartPage = () => {
-  const { state, updateQuantity, removeFromCart, clearCart } = useCart();
-  const total = state.items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+  const items = useCartStore((state) => state.items);
+  const updateQuantity = useCartStore((state) => state.updateQuantity);
+  const removeFromCart = useCartStore((state) => state.removeFromCart);
+  const clearCart = useCartStore((state) => state.clearCart);
 
-  if (state.items.length === 0) {
+  const total = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+
+  if (items.length === 0) {
     return (
       <Box sx={{ p: 4 }}>
         <Typography variant="h5">Your cart is empty.</Typography>
@@ -27,7 +31,7 @@ const CartPage = () => {
         Shopping Cart
       </Typography>
       <List>
-        {state.items.map((item) => (
+        {items.map((item) => (
           <ListItem key={item.id} sx={{ display: 'flex', justifyContent: 'space-between' }}>
             <ListItemText
               primary={`${item.name} (${item.quantity})`}

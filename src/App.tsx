@@ -4,7 +4,7 @@ import { Routes, Route, useNavigate } from 'react-router-dom';
 import { CssBaseline } from '@mui/material';
 
 import { ThemeContextProvider } from './context/ThemeContext';
-import { CartProvider } from './context/CartContext';
+
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -52,50 +52,48 @@ export default function App() {
 
   return (
     <ThemeContextProvider>
-      <CartProvider>
-        <Elements stripe={stripePromise}>
-          <CssBaseline />
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route path="/product/:id" element={<ProductPage />} />
-              <Route path="/cart" element={<CartPage />} />
-              <Route
-                path="/checkout"
-                element={
-                  <ProtectedRoute>
-                    <CheckoutPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route
-                path="/my-orders"
-                element={
-                  <ProtectedRoute>
-                    <MyOrdersPage />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/admin/*"
-                element={
-                  <AdminProtectedRoute>
-                    <AdminDashboardLayout />
-                  </AdminProtectedRoute>
-                }
-              >
-                <Route index element={<AdminDashboardPage />} />
-                <Route path="categories" element={<AdminCategoriesPage />} />
-                <Route path="users" element={<AdminUsersPage />} />
-                <Route path="logs" element={<AdminLogsPage />} />
-              </Route>
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Layout>
-        </Elements>
-      </CartProvider>
+      <Elements stripe={stripePromise}>
+        <CssBaseline />
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route path="/product/:id" element={<ProductPage />} />
+            <Route path="/cart" element={<CartPage />} />
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route
+              path="/my-orders"
+              element={
+                <ProtectedRoute>
+                  <MyOrdersPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/admin/*"
+              element={
+                <AdminProtectedRoute>
+                  <AdminDashboardLayout />
+                </AdminProtectedRoute>
+              }
+            >
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="categories" element={<AdminCategoriesPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="logs" element={<AdminLogsPage />} />
+            </Route>
+            <Route path="*" element={<NotFoundPage />} />
+          </Routes>
+        </Layout>
+      </Elements>
     </ThemeContextProvider>
   );
 }
