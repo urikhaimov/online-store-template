@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box, Button, TextField, Typography, Alert, Stack
+  Box, Button, TextField, Typography, Paper, Stack
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useAuthStore} from '../../stores/useAuthStore';
@@ -43,18 +43,50 @@ const LoginPage = () => {
   };
 
   return (
-    <Box>
-      <Typography variant="h4">Login</Typography>
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <Stack spacing={2}>
-          <TextField label="Email" {...register('email', { required: true })} />
-          <TextField label="Password" type="password" {...register('password', { required: true })} />
-          {message && <Alert severity="error">{message}</Alert>}
-          <Button type="submit" variant="contained" disabled={isSubmitting || loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </Button>
-        </Stack>
-      </form>
+    <Box
+      sx={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)',
+        p: 2,
+      }}
+    >
+      <Paper elevation={6} sx={{ p: 4, maxWidth: 400, width: '100%', borderRadius: 3 }}>
+        <Typography variant="h5" textAlign="center" gutterBottom>
+          Welcome Back
+        </Typography>
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <Stack spacing={3}>
+            <TextField
+              label="Email"
+              fullWidth
+              {...register('email', { required: 'Email is required' })}
+              error={!!errors.email}
+              helperText={errors.email?.message}
+            />
+            <TextField
+              label="Password"
+              type="password"
+              fullWidth
+              {...register('password', { required: 'Password is required' })}
+              error={!!errors.password}
+              helperText={errors.password?.message}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              disabled={isSubmitting}
+              sx={{ py: 1.5, fontWeight: 600, fontSize: '1rem' }}
+            >
+              {isSubmitting ? 'Logging in...' : 'Login'}
+            </Button>
+          </Stack>
+        </form>
+      </Paper>
     </Box>
   );
 };
