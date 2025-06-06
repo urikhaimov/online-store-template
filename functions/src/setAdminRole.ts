@@ -1,20 +1,27 @@
-import { initializeApp, cert } from 'firebase-admin/app';
+import { initializeApp, cert, ServiceAccount } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
-const serviceAccount = require('../serviceAccountKey.json');
+import * as dotenv from 'dotenv';
+import rawServiceAccount from '../serviceAccountKey.json' with  { type: 'json' };
 
-// ✅ Initialize Firebase Admin
+dotenv.config();
+const serviceAccount = rawServiceAccount as ServiceAccount;
 initializeApp({
-  credential: cert(serviceAccount),
+  credential: cert(serviceAccount)
 });
 
-// 🔁 Replace with the actual UID of the user to promote
-const targetUid = 's5lU9vG9afYEO5LIS57CWfs1AYZ2';
+const email = process.argv[2];
 
-getAuth()
-  .setCustomUserClaims(targetUid, { role: 'admin' })
-  .then(() => {
-    console.log(`✅ Admin role set for UID: ${targetUid}`);
-  })
-  .catch((error) => {
-    console.error('❌ Error setting admin role:', error);
-  });
+if (!email) {
+  console.error('❌ Please provide an email: npm run setRole your@email.com');
+  process.exit(1);
+}
+
+(async () => {
+  try {
+    const user = await getAuth().getUserByEmail(email);
+    await getAuth().setCustomUserClaims(user.uid, { role: 'admin' });
+    console.log(`✅ ${email} is now an admin`);
+  } catch (error) {
+    console.error('❌ Failed to set role:', error);
+  }
+})();

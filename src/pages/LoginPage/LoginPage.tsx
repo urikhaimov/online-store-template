@@ -1,19 +1,11 @@
-// src/pages/LoginPage/LoginPage.tsx
 import React, { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Box,
-  Button,
-  TextField,
-  Typography,
-  Alert,
-  Stack,
+  Box, Button, TextField, Typography, Alert, Stack
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
- import { useRedirect } from '../../context/RedirectContext';
-import { useSafeAuth } from '../../hooks/getSafeAuth';
-
-
+import { useAuthStore} from '../../stores/useAuthStore';
+import { useRedirect } from '../../context/RedirectContext';
 
 type LoginFormInputs = {
   email: string;
@@ -21,98 +13,45 @@ type LoginFormInputs = {
 };
 
 const LoginPage = () => {
-  const { login } = useSafeAuth();
+  const { login, user, loading } = useAuthStore();
   const { redirectTo, setRedirectTo, message, setMessage } = useRedirect();
   const navigate = useNavigate();
   const location = useLocation();
-
+  console.log(user, 'user in LoginPage');
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-    setValue,
   } = useForm<LoginFormInputs>();
+
+  // 🔁 Wait for user to be set after login
+  useEffect(() => {
+    if (user) {
+      const target = redirectTo || location.state?.from?.pathname ||
+        ['admin', 'superadmin'].includes(user.role) ? '/admin' : '/';
+      navigate(target, { replace: true });
+      setRedirectTo(null);
+    }
+  }, [user, redirectTo, location.state, navigate, setRedirectTo]);
 
   const onSubmit = async (data: LoginFormInputs) => {
     try {
-      await login(data.email, data.password);
-      setMessage(null); // clear any old message
-      navigate(redirectTo || '/');
-    } catch (err: any) {
-      setMessage(err.message || 'Login failed');
+      await login(data.email, data.password); // ✅ will trigger the `user` change above
+    } catch (err) {
+      setMessage('Invalid email or password');
     }
   };
 
-  const handleAdminLogin = () => {
-    const email = 'admin@example.com';
-    const password = 'adminpass';
-    setValue('email', email);
-    setValue('password', password);
-    handleSubmit(onSubmit)(); // auto-submit
-  };
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const redirectParam = params.get('redirect');
-    if (redirectParam) setRedirectTo(redirectParam);
-  }, [location.search, setRedirectTo]);
-
   return (
-    <Box sx={{ maxWidth: 400, mx: 'auto', mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Login
-      </Typography>
-
-      {message && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {message}
-        </Alert>
-      )}
-
-      <form onSubmit={handleSubmit(onSubmit)} noValidate>
+    <Box>
+      <Typography variant="h4">Login</Typography>
+      <form onSubmit={handleSubmit(onSubmit)}>
         <Stack spacing={2}>
-          <TextField
-            label="Email"
-            fullWidth
-            {...register('email', {
-              required: 'Email is required',
-              pattern: {
-                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                message: 'Invalid email address',
-              },
-            })}
-            error={!!errors.email}
-            helperText={errors.email?.message}
-          />
-
-          <TextField
-            label="Password"
-            type="password"
-            fullWidth
-            {...register('password', {
-              required: 'Password is required',
-              minLength: { value: 6, message: 'At least 6 characters' },
-            })}
-            error={!!errors.password}
-            helperText={errors.password?.message}
-          />
-
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            disabled={isSubmitting}
-          >
-            Log In
-          </Button>
-
-          <Button
-            variant="outlined"
-            color="secondary"
-            fullWidth
-            onClick={handleAdminLogin}
-          >
-            Login as Admin
+          <TextField label="Email" {...register('email', { required: true })} />
+          <TextField label="Password" type="password" {...register('password', { required: true })} />
+          {message && <Alert severity="error">{message}</Alert>}
+          <Button type="submit" variant="contained" disabled={isSubmitting || loading}>
+            {loading ? 'Logging in...' : 'Login'}
           </Button>
         </Stack>
       </form>

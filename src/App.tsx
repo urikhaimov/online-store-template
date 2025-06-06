@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import {
   AppBar,
@@ -33,67 +33,83 @@ import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategori
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
 import { RedirectProvider } from './context/RedirectContext';
-import { AdminProvider } from './context/AdminContext';
 
+import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore, useIsAdmin  } from './stores/useAuthStore';
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
 export default function App() {
+  useFirebaseAuthListener();
+  const navigate = useNavigate();
+  const { user, loading } = useAuthStore();
+const isAdmin = useIsAdmin();
+  useEffect(() => {
+    if (loading) return;
+
+    if (!user) {
+      navigate('/login');
+    } else if (isAdmin) {
+      navigate('/admin');
+    } else {
+      navigate('/');
+    }
+  }, [user, loading, isAdmin, navigate]);
+
   return (
     <ThemeContextProvider>
       <RedirectProvider>
-       
-          <CartProvider>
-            <Elements stripe={stripePromise}>
-              <CssBaseline />
-              <Layout>
-                <Routes>
-                  <Route path="/" element={<HomePage />} />
-                  <Route path="/product/:id" element={<ProductPage />} />
-                  <Route path="/cart" element={<CartPage />} />
 
-                  <Route
-                    path="/checkout"
-                    element={
-                      <ProtectedRoute>
-                        <CheckoutPage />
-                      </ProtectedRoute>
-                    }
-                  />
+        <CartProvider>
+          <Elements stripe={stripePromise}>
+            <CssBaseline />
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route path="/product/:id" element={<ProductPage />} />
+                <Route path="/cart" element={<CartPage />} />
 
-                  <Route path="/login" element={<LoginPage />} />
-                  <Route path="/signup" element={<SignupPage />} />
+                <Route
+                  path="/checkout"
+                  element={
+                    <ProtectedRoute>
+                      <CheckoutPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-                  <Route
-                    path="/my-orders"
-                    element={
-                      <ProtectedRoute>
-                        <MyOrdersPage />
-                      </ProtectedRoute>
-                    }
-                  />
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/signup" element={<SignupPage />} />
 
-                  <Route
-                    path="/admin/*"
-                    element={
-                      <AdminProtectedRoute>
-                        <AdminProvider>
-                          <AdminDashboardLayout />
-                        </AdminProvider>
-                      </AdminProtectedRoute>
-                    }
-                  >
-                    <Route index element={<AdminDashboardPage />} />
-                    <Route path="categories" element={<AdminCategoriesPage />} />
-                    <Route path="users" element={<AdminUsersPage />} />
-                    <Route path="logs" element={<AdminLogsPage />} />
-                  </Route>
+                <Route
+                  path="/my-orders"
+                  element={
+                    <ProtectedRoute>
+                      <MyOrdersPage />
+                    </ProtectedRoute>
+                  }
+                />
 
-                  <Route path="*" element={<NotFoundPage />} />
-                </Routes>
-              </Layout>
-            </Elements>
-          </CartProvider>
-       
+                <Route
+                  path="/admin/*"
+                  element={
+                    <AdminProtectedRoute>
+                      <AdminDashboardLayout />
+                    </AdminProtectedRoute>
+                  }
+                >
+                  <Route index element={<AdminDashboardPage />} />
+                  <Route path="categories" element={<AdminCategoriesPage />} />
+                  <Route path="users" element={<AdminUsersPage />} />
+                  <Route path="logs" element={<AdminLogsPage />} />
+                </Route>
+
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </Layout>
+          </Elements>
+        </CartProvider>
+
       </RedirectProvider>
     </ThemeContextProvider>
   );

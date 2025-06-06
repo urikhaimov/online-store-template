@@ -1,4 +1,3 @@
-// src/components/Navbar.tsx
 import React, { useState } from 'react';
 import {
   AppBar,
@@ -17,11 +16,12 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import { useAuthStore } from '../stores/useAuthStore';
+import { useAuthStore, useIsAdmin  } from '../stores/useAuthStore';
 import CartButton from './CartButton';
 
 const Navbar = () => {
-  const { user, logout, isAdmin } = useAuthStore();
+  const { user, logout} = useAuthStore();
+  const isAdmin = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const theme = useTheme();
@@ -38,7 +38,7 @@ const Navbar = () => {
     { to: '/cart', label: 'Cart' },
     { to: '/checkout', label: 'Checkout' },
     ...(user ? [{ to: '/my-orders', label: 'My Orders' }] : []),
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
+    ...(isAdmin ? [{ to: '/admin', label: 'Admin Panel' }] : []),
     ...(user
       ? [{ action: logout, label: 'Logout' }]
       : [

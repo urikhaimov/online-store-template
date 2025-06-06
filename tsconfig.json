@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "outDir": "dist"
   },
-  "include": ["src"],
+  "include": ["src", "functions/src/seedAdminUser.js"],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

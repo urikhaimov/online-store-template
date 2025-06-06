@@ -4,10 +4,10 @@ import { AppBar, Toolbar, Typography, Button, Box } from '@mui/material';
 import { Link } from 'react-router-dom';
 
 import CartButton from './CartButton';
-import { useAuthStore } from '../stores/useAuthStore';
+import { useAuthStore, useIsAdmin  } from '../stores/useAuthStore';
 const Navbar = () => {
-  const { user, logout, isAdmin } = useAuthStore();
-
+  const { user, logout} = useAuthStore();
+const isAdmin = useIsAdmin();
   return (
     <AppBar position="sticky" sx={{ zIndex: 1300 }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>

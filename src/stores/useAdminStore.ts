@@ -1,43 +1,21 @@
 import { create } from 'zustand';
-import { AppUser } from '../types/AppUser';
 
-interface AuthState {
-  user: AppUser | null;
+interface AdminState {
+  role: 'admin' | 'user' | null;
   loading: boolean;
-  setUser: (user: AppUser | null) => void;
+  setRole: (role: 'admin' | 'user' | null) => void;
   setLoading: (loading: boolean) => void;
+  isAdmin: boolean;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  user: null,
+export const useAdminStore = create<AdminState>((set, get) => ({
+  role: null,
   loading: true,
-  setUser: (user) => set({ user }),
+
+  setRole: (role) => set({ role }),
   setLoading: (loading) => set({ loading }),
+
+  get isAdmin() {
+    return get().role === 'admin';
+  },
 }));
-
-// Initialize auth listener separately (e.g., in main App.tsx or a setup file)
-import { onAuthStateChanged } from 'firebase/auth';
-import { auth } from '../firebase';
-
-onAuthStateChanged(auth, async (firebaseUser) => {
-  const { setUser, setLoading } = useAuthStore.getState();
-  if (firebaseUser) {
-    try {
-      const tokenResult = await firebaseUser.getIdTokenResult(true);
-      const customClaims = tokenResult.claims;
-      const userData: AppUser = {
-        id: firebaseUser.uid,
-        name: firebaseUser.displayName || '',
-        email: firebaseUser.email || '',
-        role: customClaims?.role === 'admin' ? 'admin' : 'user',
-      };
-      setUser(userData);
-    } catch (err) {
-      console.error('❌ Failed to load token claims', err);
-      setUser(null);
-    }
-  } else {
-    setUser(null);
-  }
-  setLoading(false);
-});
