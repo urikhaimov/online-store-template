@@ -1,54 +1,86 @@
-# React + TypeScript + Vite (in progress)
+# 🛍️ My Online Store Template
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern e-commerce web app built with **React + Vite**, styled using **Material UI**, and powered by **Firebase** for authentication, Firestore, and Cloud Functions.
 
-Currently, two official plugins are available:
+## 🚀 Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔐 Firebase Authentication with Role-Based Access
+- 🛒 Shopping Cart with Zustand Global Store
+- 🧑‍💼 Admin Dashboard with Logs, User Management, and Category Management
+- 📦 Product Detail Pages
+- 💳 Stripe Checkout Integration (Test Key)
+- 🔄 Zustand for State Management
+- 📊 Firebase Functions for Admin Role Assignment
 
-## Expanding the ESLint configuration
+## 🧱 Tech Stack
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+- React 19 + Vite
+- TypeScript
+- Material UI 5
+- Zustand (State Management)
+- Firebase (Auth, Firestore, Functions)
+- Stripe (Client Integration)
+- React Router v6
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 📂 Project Structure
+
+```
+src/
+├── api/                # Firebase API functions
+├── components/         # UI components
+├── context/            # Legacy (now replaced with Zustand)
+├── hooks/              # Custom hooks
+├── layouts/            # Main Layouts
+├── pages/              # Route Pages
+├── stores/             # Zustand state stores
+├── types/              # Shared TS types
+├── utils/              # Utility functions
+functions/              # Firebase Functions & Role Scripts
+public/                 # Static files
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## 🧪 Scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+```bash
+npm install              # Install dependencies
+npm run dev              # Start local dev server
+npm run build            # Build for production
+npm run preview          # Preview production build
+npm run setRole <email>  # Manually assign admin role via Firebase Admin SDK
 ```
+
+## 📝 .env Example
+
+```env
+# Firebase client config
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+VITE_FIREBASE_PROJECT_ID=...
+VITE_FIREBASE_STORAGE_BUCKET=...
+VITE_FIREBASE_MESSAGING_SENDER_ID=...
+VITE_FIREBASE_APP_ID=...
+VITE_FIREBASE_MEASUREMENT_ID=...
+
+# Stripe public key
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_xxxxxxxxxxxxxxxxxxxxxxxx
+```
+
+## ⚙️ Admin Role Management
+
+Firebase Admin SDK script to assign roles manually:
+```bash
+npm run setRole admin@example.com
+```
+
+Make sure you have `serviceAccountKey.json` in the `functions/` folder.
+
+## 📦 Deployment
+
+You can deploy with Firebase Hosting + Functions:
+```bash
+firebase deploy --only "functions,hosting"
+```
+
+## 👨‍💻 Author
+
+Built by [Uri Khaimov](https://github.com/urikhaimov)
