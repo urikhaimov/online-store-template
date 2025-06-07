@@ -3,7 +3,7 @@ import { useAllProducts } from '../../hooks/useProducts';
 
 export default function HomePage() {
   const { data: products, isLoading } = useAllProducts();
-
+console.log(products);
   if (isLoading) return <CircularProgress />;
 
   return (
