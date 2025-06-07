@@ -1,9 +1,6 @@
 // ✅ Cleaned and Fixed App.tsx
 import React, { useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-import { CssBaseline } from '@mui/material';
-
-import { ThemeContextProvider } from './context/ThemeContext';
 
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -30,17 +27,21 @@ import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
 import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
 import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
 
-
+import { useAppTheme } from './hooks/useAppTheme';
+import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
+import logo from './assets/logo.png';
 
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
 export default function App() {
+
   useFirebaseAuthListener();
   const navigate = useNavigate();
   const { user, loading } = useAuthStore();
   const isAdmin = useIsAdmin();
   const hasRedirected = useRef(false);
   const { consumeRedirect } = useRedirect();
+  const { theme, isLoading } = useAppTheme();
 
   useEffect(() => {
     if (loading || hasRedirected.current) return;
@@ -54,8 +55,23 @@ export default function App() {
     }
   }, [user, loading, isAdmin, navigate]);
 
+  if (isLoading) {
+    return (
+      <Box
+        height="100vh"
+        display="flex"
+        alignItems="center"
+        justifyContent="center"
+        bgcolor="#fff"
+      >
+        <img src={logo} alt="Loading..." style={{ width: 120, opacity: 0.9 }} />
+      </Box>
+    );
+  }
+
+
   return (
-    <ThemeContextProvider>
+    <ThemeProvider theme={theme}>
       <Elements stripe={stripePromise}>
         <CssBaseline />
         <Layout>
@@ -95,14 +111,14 @@ export default function App() {
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
-               <Route path="products/edit/:productId" element={<EditProductPage />} />
-            
+              <Route path="products/edit/:productId" element={<EditProductPage />} />
+
               <Route path="products/new" element={<AddProductPage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Layout>
       </Elements>
-    </ThemeContextProvider>
+    </ThemeProvider>
   );
 }
