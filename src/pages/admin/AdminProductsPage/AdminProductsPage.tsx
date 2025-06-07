@@ -1,85 +1,118 @@
-// src/pages/admin/AdminProductsPage/AdminProductsPage.tsx
-import { useEffect, useState } from 'react';
+// src/pages/admin/AdminProductsPage.tsx
+import React from 'react';
 import {
   Box,
   Typography,
-  Paper,
-  List,
-  ListItem,
-  ListItemText,
-  CircularProgress,
+  Card,
+  CardContent,
+  CardMedia,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Snackbar,
+  Alert,
+  IconButton,
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
-
-import { fetchCategories } from '../../../api/categories';
-import { fetchProducts } from '../../../api/products';
-import type { Category, Product } from '../../../types/firebase';
+import { useAllProducts } from '../../../hooks/useProducts';
+import { useProductMutations } from '../../../hooks/useProductMutations';
 
 export default function AdminProductsPage() {
+  const { data: products = [] } = useAllProducts();
+  const { remove } = useProductMutations();
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const load = async () => {
-      const [cats, prods] = await Promise.all([
-        fetchCategories(),
-        fetchProducts(),
-      ]);
-      setCategories(cats);
-      setProducts(prods);
-      setLoading(false);
-    };
-    load();
-  }, []);
+  const [deleteDialogOpen, setDeleteDialogOpen] = React.useState(false);
+  const [selectedProductId, setSelectedProductId] = React.useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = React.useState('');
 
-  if (loading) return <CircularProgress sx={{ mt: 4 }} />;
+  const handleDeleteClick = (productId: string) => {
+    setSelectedProductId(productId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDelete = async () => {
+    if (selectedProductId) {
+      await remove.mutateAsync(selectedProductId);
+      setSuccessMessage('Product deleted successfully');
+    }
+    setDeleteDialogOpen(false);
+    setSelectedProductId(null);
+  };
+
+  const handleEditClick = (productId: string) => {
+    navigate(`/admin/products/edit/${productId}`);
+  };
 
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
         Admin – Products
       </Typography>
-      <Button variant="contained" sx={{ mb: 2 }} onClick={() => navigate('/admin/products/new')}>
+
+      <Button
+        variant="contained"
+        onClick={() => navigate('/admin/products/add')}
+        sx={{ mb: 2 }}
+      >
         Add Product
       </Button>
 
-      {categories.map((cat) => {
-        const catProducts = products.filter(p => p.categoryId === cat.id);
-        if (catProducts.length === 0) return null;
+      {products.map((product) => (
+        <Card key={product.id} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
+          <CardMedia
+            component="img"
+            sx={{ width: 100, height: 100 }}
+            image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
+            alt={product.name}
+          />
+          <CardContent sx={{ flex: 1 }}>
+            <Typography variant="h6">{product.name}</Typography>
+            <Typography variant="body2">${product.price.toFixed(2)}</Typography>
+            <Typography variant="caption">Stock: {product.stock}</Typography>
+          </CardContent>
+          <Box pr={2}>
+            <IconButton onClick={() => handleEditClick(product.id)}>
+              <EditIcon />
+            </IconButton>
+            <IconButton color="error" onClick={() => handleDeleteClick(product.id)}>
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        </Card>
+      ))}
 
-        return (
-          <Paper key={cat.id} sx={{ mb: 3, p: 2 }}>
-            <Typography variant="h6">{cat.name}</Typography>
-            <List>
-              {catProducts.map((prod) => (
-                <ListItem key={prod.id}>
-                  <ListItemText
-                    primary={prod.name}
-                    secondary={`$${prod.price.toFixed(2)} | Stock: ${prod.stock}`}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          </Paper>
-        );
-      })}
+      {/* Confirm Delete Dialog */}
+      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete this product? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button onClick={confirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      {/* Optional: uncategorized fallback */}
-      {products.some(p => !p.categoryId) && (
-        <Paper sx={{ p: 2 }}>
-          <Typography variant="h6">Uncategorized</Typography>
-          <List>
-            {products.filter(p => !p.categoryId).map((prod) => (
-              <ListItem key={prod.id}>
-                <ListItemText primary={prod.name} secondary={`$${prod.price}`} />
-              </ListItem>
-            ))}
-          </List>
-        </Paper>
-      )}
+      {/* Success Snackbar */}
+      <Snackbar
+        open={!!successMessage}
+        autoHideDuration={3000}
+        onClose={() => setSuccessMessage('')}
+      >
+        <Alert severity="success" sx={{ width: '100%' }}>
+          {successMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

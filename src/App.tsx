@@ -28,6 +28,10 @@ import { useRedirect } from './context/RedirectContext';
 import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
 import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
 import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
+import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
+
+
+
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
 export default function App() {
@@ -91,6 +95,8 @@ export default function App() {
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
+               <Route path="products/edit/:productId" element={<EditProductPage />} />
+            
               <Route path="products/new" element={<AddProductPage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
