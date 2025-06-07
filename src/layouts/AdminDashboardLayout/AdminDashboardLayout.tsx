@@ -35,6 +35,12 @@ export default function AdminDashboardLayout() {
               <ListItemText primary="View Logs" />
             </NavLink>
           </ListItem>
+           <ListItem>
+            <NavLink to="/admin/products" style={linkStyle}>
+              <ListItemText primary="Manage Products" />
+            </NavLink>
+          </ListItem>
+
         </List>
       </aside>
       <main style={{ flexGrow: 1, padding: '16px' }}>

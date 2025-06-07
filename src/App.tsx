@@ -23,11 +23,11 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage/AdminDashboardP
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategoriesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
-
+import AdminProductsPage from './pages/admin/AdminProductsPage/AdminProductsPage';
 import { useRedirect } from './context/RedirectContext';
 import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
 import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
-
+import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
 export default function App() {
@@ -57,6 +57,7 @@ export default function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
+
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route
@@ -89,6 +90,8 @@ export default function App() {
               <Route path="categories" element={<AdminCategoriesPage />} />
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />
+              <Route path="products" element={<AdminProductsPage />} />
+              <Route path="products/new" element={<AddProductPage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

@@ -13,14 +13,16 @@ import DeleteIcon from '@mui/icons-material/Delete';
 
 import { fetchCategories, addCategory, deleteCategory } from '../../../api/categories';
 import type { Category } from '../../../types/firebase';
-interface AddProductDialogProps {
+
+interface ManageCategoriesPanelProps {
   open: boolean;
   onClose: () => void;
-}export default function AddProductDialog({ open, onClose }: AddProductDialogProps) {
+}
+
+export default function ManageCategoriesPanel({ open, onClose }: ManageCategoriesPanelProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategoryName, setNewCategoryName] = useState('');
 
-  // Fetch categories on mount
   useEffect(() => {
     fetchCategories().then(setCategories);
   }, []);
@@ -29,13 +31,13 @@ interface AddProductDialogProps {
     if (!newCategoryName.trim()) return;
 
     const newCat = await addCategory(newCategoryName.trim());
-    setCategories(prev => [...prev, newCat]);
+    setCategories((prev) => [...prev, newCat]);
     setNewCategoryName('');
   };
 
   const handleDeleteCategory = async (id: string) => {
     await deleteCategory(id);
-    setCategories(prev => prev.filter(cat => cat.id !== id));
+    setCategories((prev) => prev.filter((cat) => cat.id !== id));
   };
 
   return (
@@ -57,7 +59,11 @@ interface AddProductDialogProps {
           <ListItem
             key={category.id}
             secondaryAction={
-              <IconButton edge="end" aria-label="delete" onClick={() => handleDeleteCategory(category.id)}>
+              <IconButton
+                edge="end"
+                aria-label="delete"
+                onClick={() => handleDeleteCategory(category.id)}
+              >
                 <DeleteIcon />
               </IconButton>
             }

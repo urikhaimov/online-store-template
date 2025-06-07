@@ -10,11 +10,11 @@ export type Product = {
   name: string;
   description: string;
   price: number;
+  stock: number;
   categoryId: string;
   imageUrls: string[];
-  stock?: number; // ✅ optional if not always defined
-  
 };
+
 export type NewProduct = Omit<Product, 'id' | 'imageUrls'> & {
   images: File[];
 };

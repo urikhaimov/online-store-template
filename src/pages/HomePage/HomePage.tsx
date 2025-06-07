@@ -1,27 +1,21 @@
-import { useProducts } from '../../hooks/useProducts';
-import ProductCard from '../../components/ProductCard';
-import { FixedSizeList as List } from 'react-window';
+import { Box, Typography, CircularProgress } from '@mui/material';
+import { useAllProducts } from '../../hooks/useProducts';
 
-const HomePage = () => {
-  const { data = [], isLoading, error } = useProducts();
+export default function HomePage() {
+  const { data: products, isLoading } = useAllProducts();
 
-  if (isLoading) return <div>Loading products...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  if (isLoading) return <CircularProgress />;
 
   return (
-    <List
-      height={600}
-      itemCount={data.length}
-      itemSize={120}
-      width="100%"
-    >
-      {({ index, style }) => (
-        <div style={style}>
-          <ProductCard product={data[index]} />
-        </div>
-      )}
-    </List>
+    <Box p={3}>
+      <Typography variant="h4">All Products</Typography>
+      <ul>
+        {(products || []).map((p) => (
+          <li key={p.id}>
+            {p.name} - ${p.price}
+          </li>
+        ))}
+      </ul>
+    </Box>
   );
-};
-
-export default HomePage;
+}
