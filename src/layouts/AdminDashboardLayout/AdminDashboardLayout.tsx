@@ -1,51 +1,62 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { List, ListItem, ListItemText } from '@mui/material';
+import { Box, List, ListItemButton, ListItemText, Typography, Divider } from '@mui/material';
 
 export default function AdminDashboardLayout() {
+  const navItems = [
+    { label: 'Dashboard Home', to: '/admin' },
+    { label: 'Manage Categories', to: '/admin/categories' },
+    { label: 'Manage Users', to: '/admin/users' },
+    { label: 'View Logs', to: '/admin/logs' },
+    { label: 'Manage Products', to: '/admin/products' },
+  ];
+
   const linkStyle = ({ isActive }: { isActive: boolean }) => ({
     textDecoration: 'none',
     color: isActive ? '#1976d2' : 'inherit',
     backgroundColor: isActive ? '#e3f2fd' : 'transparent',
     borderRadius: '4px',
-    padding: '8px 16px',
-    display: 'block',
   });
 
   return (
-    <div style={{ display: 'flex' }}>
-      <aside style={{ width: '240px', borderRight: '1px solid #ddd' }}>
-        <List>
-          <ListItem>
-            <NavLink to="/admin" style={linkStyle}>
-              <ListItemText primary="Dashboard Home" />
+    <Box display="flex" height="100vh" overflow="hidden">
+      {/* Sidebar */}
+      <Box
+        component="aside"
+        sx={{
+          width: 240,
+          minWidth: 240,
+          borderRight: '1px solid #ddd',
+          bgcolor: '#fafafa',
+          p: 2,
+        }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Admin Panel
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <List disablePadding>
+          {navItems.map(({ label, to }) => (
+            <NavLink key={to} to={to} style={linkStyle}>
+              <ListItemButton>
+                <ListItemText primary={label} />
+              </ListItemButton>
             </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/admin/categories" style={linkStyle}>
-              <ListItemText primary="Manage Categories" />
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/admin/users" style={linkStyle}>
-              <ListItemText primary="Manage Users" />
-            </NavLink>
-          </ListItem>
-          <ListItem>
-            <NavLink to="/admin/logs" style={linkStyle}>
-              <ListItemText primary="View Logs" />
-            </NavLink>
-          </ListItem>
-           <ListItem>
-            <NavLink to="/admin/products" style={linkStyle}>
-              <ListItemText primary="Manage Products" />
-            </NavLink>
-          </ListItem>
-
+          ))}
         </List>
-      </aside>
-      <main style={{ flexGrow: 1, padding: '16px' }}>
+      </Box>
+
+      {/* Scrollable main content area */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          overflowY: 'hidden',
+          height: '100vh',
+          p: 3,
+        }}
+      >
         <Outlet />
-      </main>
-    </div>
+      </Box>
+    </Box>
   );
 }
