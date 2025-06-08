@@ -1,52 +1,31 @@
-import { useState, useEffect } from 'react';
-import { fetchCategories, addCategory, deleteCategory } from '../../../api/categories';
-import { Category } from '../../../types/firebase';
 import {
   Box,
   Typography,
-  Button,
-  TextField,
-  List,
-  ListItem,
-  ListItemText,
-  IconButton,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  SelectChangeEvent, // ✅ added
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete';
+import { useState } from 'react';
+import { ThemePanel } from '../ThemePanel/ThemePanel';
+
+const themes = ['light', 'dark', 'custom'];
 
 export default function AdminDashboardPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [newCategoryName, setNewCategoryName] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('light');
 
-  // Load existing categories on mount
-  useEffect(() => {
-    fetchCategories().then(setCategories);
-  }, []);
-
-  const handleAddCategory = async () => {
-    if (!newCategoryName.trim()) return;
-
-    const newCat = await addCategory(newCategoryName.trim());
-    setCategories((prev) => [...prev, newCat]);
-    setNewCategoryName('');
-  };
-
-  const handleDeleteCategory = async (id: string) => {
-    await deleteCategory(id);
-    setCategories((prev) => prev.filter((cat) => cat.id !== id));
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      handleAddCategory();
-    }
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedTheme(event.target.value);
+    // TODO: Save theme
   };
 
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
-        Admin Dashboard – Categories
+        Admin Dashboard – Themes
       </Typography>
-
+      <ThemePanel/>
       
     </Box>
   );
