@@ -1,113 +1,97 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { Theme as MuiTheme } from '@mui/material/styles';
-import { generateMuiTheme } from '../theme/generateMuiTheme';
-import { fetchThemeConfig } from '../utils/fetchThemeConfig';
-import { updateUserThemeMode, fetchUserThemeMode } from '../api/userPreferences';
-import { useSafeAuth } from '../hooks/useAuth';
-import type { ThemeConfig } from '../types/ThemeConfig';
-import { defaultThemeConfig } from '../constants/defaultTheme';
-type Mode = 'light' | 'dark';
+// src/context/ThemeContext.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { createTheme, Theme } from '@mui/material/styles';
+import { getDoc, doc } from 'firebase/firestore';
+import { db } from '../firebase';
 
-interface ThemeContextType {
-  theme: ThemeConfig | null;
-  muiTheme: MuiTheme | null;
+type ThemeContextType = {
+  theme: Theme;
+  mode: 'light' | 'dark';
+  toggleMode: () => void;
   isLoading: boolean;
   error: string | null;
-  mode: Mode;
-  toggleMode: () => void;
-  updateTheme: (newConfig: ThemeConfig) => void;
-}
+};
 
-const defaultMode = (localStorage.getItem('themeMode') as Mode) || 'light';
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
-const ThemeContext = createContext<ThemeContextType>({
-  theme: null,
-  muiTheme: null,
-  isLoading: true,
-  error: null,
-  mode: defaultMode,
-  toggleMode: () => { },
-  updateTheme: () => { },
-});
-
-export const ThemeProvider = ({
-  storeId = 'default',
-  children,
-}: {
-  storeId?: string;
-  children: ReactNode;
-}) => {
-  
-  const [theme, setTheme] = useState<ThemeConfig | null>(null);
-  const [muiTheme, setMuiTheme] = useState<MuiTheme | null>(null);
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const storeId = localStorage.getItem('storeId') || 'store1';
+  const [mode, setMode] = useState<'light' | 'dark'>('light');
+  const [theme, setTheme] = useState(createTheme());
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mode, setMode] = useState<Mode>(defaultMode);
 
-  const { user } = useSafeAuth();
-  console.log(storeId , 'Store ID used in ThemeProvider');
-  const toggleMode = () => {
-    const newMode: Mode = mode === 'light' ? 'dark' : 'light';
-    setMode(newMode);
-    localStorage.setItem('themeMode', newMode);
+  const buildTheme = (darkMode: boolean, primaryColor: string, secondaryColor: string, font: string) =>
+    createTheme({
+      palette: {
+        mode: darkMode ? 'dark' : 'light',
+        primary: { main: primaryColor },
+        secondary: { main: secondaryColor },
+      },
+      typography: {
+        fontFamily: font,
+      },
+    });
 
-    if (user?.id) {
-      updateUserThemeMode(user.id, newMode).catch(console.error);
+  const fetchTheme = async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      let docRef = doc(db, 'themes', storeId);
+      let docSnap = await getDoc(docRef);
+
+      if (!docSnap.exists()) {
+        console.warn(`⚠ Theme not found for store: ${storeId}. Falling back to 'settings'.`);
+        docRef = doc(db, 'themes', 'settings');
+        docSnap = await getDoc(docRef);
+      }
+
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        const dark = !!data.darkMode;
+        const primary = data.primaryColor || '#1976d2';
+        const secondary = data.secondaryColor || '#f50057';
+        const font = data.font || 'Roboto';
+        setTheme(buildTheme(dark, primary, secondary, font));
+        setMode(dark ? 'dark' : 'light');
+      } else {
+        throw new Error('No valid theme found.');
+      }
+    } catch (err: any) {
+      console.error(err);
+      setError(err.message || 'Unknown error loading theme.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const updateTheme = (newConfig: ThemeConfig) => {
-    setTheme(newConfig);
-    setMuiTheme(generateMuiTheme(newConfig, newConfig.mode || mode));
-    if (newConfig.mode && newConfig.mode !== mode) {
-      setMode(newConfig.mode);
-      localStorage.setItem('themeMode', newConfig.mode);
-    }
-  };
   useEffect(() => {
-    fetchThemeConfig(storeId)
-      .then((data) => {
-        setTheme(data);
-        const theme = generateMuiTheme(data, mode);
-        console.log('Generated theme:', theme);
-        setMuiTheme(theme);
-      })
-      .catch((err) => {
-        console.error('Fallback theme used due to fetch error:', err);
-        setTheme(defaultThemeConfig);
-        setMuiTheme(generateMuiTheme(defaultThemeConfig, mode));
-      })
-      .finally(() => setIsLoading(false));
+    fetchTheme();
   }, [storeId]);
 
-
-  useEffect(() => {
-    if (theme) {
-      setMuiTheme(generateMuiTheme(theme, mode));
-    }
-  }, [mode, theme]);
-
-  useEffect(() => {
-    if (!user?.id) return;
-    fetchUserThemeMode(user.id)
-      .then((savedMode) => {
-        const fallback = (localStorage.getItem('themeMode') as Mode) || 'light';
-        const initial = savedMode || fallback;
-        setMode(initial);
-        localStorage.setItem('themeMode', initial);
+  const toggleMode = () => {
+    const newMode = mode === 'light' ? 'dark' : 'light';
+    setMode(newMode);
+    setTheme(
+      createTheme({
+        ...theme,
+        palette: {
+          ...theme.palette,
+          mode: newMode,
+        },
       })
-      .catch(console.error);
-  }, [user?.id]);
-
-
+    );
+  };
 
   return (
-    <ThemeContext.Provider
-      value={{ theme, muiTheme, isLoading, error, mode, toggleMode, updateTheme }}
-    >
+    <ThemeContext.Provider value={{ theme, mode, toggleMode, isLoading, error }}>
       {children}
     </ThemeContext.Provider>
   );
 };
 
-export const useThemeContext = () => useContext(ThemeContext);
+export const useThemeContext = () => {
+  const context = useContext(ThemeContext);
+  if (!context) throw new Error('useThemeContext must be used within a ThemeProvider');
+  return context;
+};

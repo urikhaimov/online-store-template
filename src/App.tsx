@@ -45,7 +45,7 @@ export default function App() {
   const isAdmin = useIsAdmin();
   const hasRedirected = useRef(false);
   const { consumeRedirect } = useRedirect();
-  const { muiTheme, isLoading } = useThemeContext();
+  const { theme, isLoading } = useThemeContext();
 
   useEffect(() => {
     if (loading || hasRedirected.current) return;
@@ -58,10 +58,8 @@ export default function App() {
       hasRedirected.current = true;
     }
   }, [user, loading, isAdmin, navigate]);
-   console.log('App rendered with user:', user);
-   console.log(isLoading, 'Loading state:', loading);
-   console.log ('MUI Theme:', muiTheme);
-  if (isLoading || !muiTheme) {
+
+  if (isLoading || !theme) {
     return (
       <Box
         height="100vh"
@@ -69,7 +67,7 @@ export default function App() {
         display="flex"
         alignItems="center"
         justifyContent="center"
-        bgcolor={muiTheme?.palette.background.default || '#fff'}
+        bgcolor={theme?.palette.background.default || '#fff'}
       >
         <CircularProgress size={60} color="primary" />
       </Box>
@@ -77,7 +75,7 @@ export default function App() {
   }
 
   return (
-    <MuiThemeProvider theme={muiTheme}>
+    <MuiThemeProvider theme={theme}>
       <Elements stripe={stripePromise}>
         <CssBaseline />
         <Layout>

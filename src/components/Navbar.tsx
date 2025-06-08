@@ -18,7 +18,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
 import { useAuthStore, useIsAdmin } from '../stores/useAuthStore';
 import CartButton from './CartButton';
-import StoreSwitcher from './StoreSwitcher';
+import {StoreSwitcher} from './StoreSwitcher';
 const Navbar = () => {
   const { user, logout } = useAuthStore();
   const isAdmin = useIsAdmin();

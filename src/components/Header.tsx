@@ -8,36 +8,42 @@ import {
   Alert,
 } from '@mui/material';
 import Navbar from './Navbar';
-
 import { useSafeAuth } from '../hooks/useAuth';
+import  {StoreSwitcher}  from './StoreSwitcher';
+import { useStoreSettings } from '../stores/useStoreSettings';
 
 const Header: React.FC = () => {
   const { user } = useSafeAuth();
   const isAdmin = user?.role === 'admin';
 
-  const [storeId, setStoreId] = useState(() => localStorage.getItem('storeId') || 'store1');
+  const { storeId, setStoreId } = useStoreSettings();
   const [showToast, setShowToast] = useState(false);
 
-  const handleStoreChange = (newStoreId: string) => {
-    localStorage.setItem('storeId', newStoreId);
-    setStoreId(newStoreId);
+  const handleStoreChange = (newId: string) => {
+    setStoreId(newId);
     setShowToast(true);
-    setTimeout(() => window.location.reload(), 1000);
+     setTimeout(() => window.location.reload(), 1000);
+   
   };
 
   return (
     <AppBar position="static">
       <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        {/* Left: Logo */}
         <Typography variant="h6" fontWeight="bold">
           My Online Store
         </Typography>
 
+        {/* Right: Navbar and optionally Store Switcher */}
         <Box display="flex" alignItems="center" gap={2}>
           <Navbar />
-        
+          {isAdmin && (
+            <StoreSwitcher current={storeId} onChange={handleStoreChange} />
+          )}
         </Box>
       </Toolbar>
 
+      {/* Toast notification */}
       <Snackbar
         open={showToast}
         autoHideDuration={1000}

@@ -2,9 +2,8 @@ import {
   Select,
   MenuItem,
   FormControl,
-  Box,
   Avatar,
-  Tooltip,
+  Box,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { useEffect, useState } from 'react';
@@ -21,7 +20,7 @@ const STORES: StoreInfo[] = [
   { id: 'store3', name: 'Fresh Mart', logo: '/logos/store3.png' },
 ];
 
- function StoreSwitcher({
+export function StoreSwitcher({
   current,
   onChange,
 }: {
@@ -35,8 +34,9 @@ const STORES: StoreInfo[] = [
   }, [current]);
 
   const handleChange = (e: any) => {
-    setSelected(e.target.value);
-    onChange(e.target.value);
+    const newId = e.target.value;
+    setSelected(newId);
+    onChange(newId);
   };
 
   const activeStore = STORES.find((s) => s.id === selected) || STORES[0];
@@ -47,20 +47,15 @@ const STORES: StoreInfo[] = [
       variant="outlined"
       sx={{
         minWidth: 40,
-        ml: 1.5,
+        mt: '2px',
+        ml: 1,
         '& .MuiInputBase-root': {
           height: 36,
           width: 36,
           borderRadius: '50%',
           bgcolor: 'white',
-          p: 0,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          p: 0.5,
           boxShadow: 1,
-        },
-        '& .MuiSelect-icon': {
-          display: 'none',
         },
       }}
     >
@@ -70,13 +65,11 @@ const STORES: StoreInfo[] = [
         IconComponent={ExpandMoreIcon}
         displayEmpty
         renderValue={() => (
-          <Tooltip title={activeStore.name}>
-            <Avatar
-              src={activeStore.logo}
-              alt={activeStore.name}
-              sx={{ width: 24, height: 24 }}
-            />
-          </Tooltip>
+          <Avatar
+            src={activeStore.logo}
+            alt={activeStore.name}
+            sx={{ width: 24, height: 24 }}
+          />
         )}
       >
         {STORES.map((store) => (
@@ -91,4 +84,3 @@ const STORES: StoreInfo[] = [
     </FormControl>
   );
 }
-export default StoreSwitcher;
