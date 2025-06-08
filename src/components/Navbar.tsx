@@ -16,11 +16,11 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { Link } from 'react-router-dom';
-import { useAuthStore, useIsAdmin  } from '../stores/useAuthStore';
+import { useAuthStore, useIsAdmin } from '../stores/useAuthStore';
 import CartButton from './CartButton';
-
+import StoreSwitcher from './StoreSwitcher';
 const Navbar = () => {
-  const { user, logout} = useAuthStore();
+  const { user, logout } = useAuthStore();
   const isAdmin = useIsAdmin();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -34,18 +34,18 @@ const Navbar = () => {
     label: string;
     action?: () => void;
   }[] = [
-    { to: '/', label: 'Home' },
-    { to: '/cart', label: 'Cart' },
-    { to: '/checkout', label: 'Checkout' },
-    ...(user ? [{ to: '/my-orders', label: 'My Orders' }] : []),
-    ...(isAdmin ? [{ to: '/admin', label: 'Admin Panel' }] : []),
-    ...(user
-      ? [{ action: logout, label: 'Logout' }]
-      : [
+      { to: '/', label: 'Home' },
+      { to: '/cart', label: 'Cart' },
+      { to: '/checkout', label: 'Checkout' },
+      ...(user ? [{ to: '/my-orders', label: 'My Orders' }] : []),
+      ...(isAdmin ? [{ to: '/admin', label: 'Admin Panel' }] : []),
+      ...(user
+        ? [{ action: logout, label: 'Logout' }]
+        : [
           { to: '/login', label: 'Login' },
           { to: '/signup', label: 'Signup' },
         ]),
-  ];
+    ];
 
   const drawer = (
     <Box onClick={toggleDrawer} sx={{ width: 250 }}>
@@ -80,7 +80,7 @@ const Navbar = () => {
                 <MenuIcon />
               </IconButton>
             )}
-          
+
           </Box>
 
           {!isMobile && (
@@ -102,6 +102,17 @@ const Navbar = () => {
                 )
               )}
               <CartButton />
+              {isAdmin && (
+                <Box sx={{ ml: 1 }}>
+                  <StoreSwitcher
+                    current={localStorage.getItem('storeId') || 'store1'}
+                    onChange={(newId: string) => {
+                      localStorage.setItem('storeId', newId);
+                      window.location.reload();
+                    }}
+                  />
+                </Box>
+              )}
             </Box>
           )}
         </Toolbar>

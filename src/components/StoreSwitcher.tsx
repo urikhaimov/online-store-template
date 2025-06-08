@@ -1,49 +1,94 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { FormControl, InputLabel, MenuItem, Select, SelectChangeEvent } from '@mui/material';
+import {
+  Select,
+  MenuItem,
+  FormControl,
+  Box,
+  Avatar,
+  Tooltip,
+} from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useEffect, useState } from 'react';
 
-const storeOptions = [
-  { id: 'tech-store', label: 'Tech Store' },
-  { id: 'fashion-boutique', label: 'Fashion Boutique' },
+interface StoreInfo {
+  id: string;
+  name: string;
+  logo: string;
+}
+
+const STORES: StoreInfo[] = [
+  { id: 'store1', name: 'Urban Outfitters', logo: '/logos/store1.png' },
+  { id: 'store2', name: 'Gadget Hub', logo: '/logos/store2.png' },
+  { id: 'store3', name: 'Fresh Mart', logo: '/logos/store3.png' },
 ];
 
-const StoreSwitcher = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+ function StoreSwitcher({
+  current,
+  onChange,
+}: {
+  current: string;
+  onChange: (newStoreId: string) => void;
+}) {
+  const [selected, setSelected] = useState(current);
 
-  const currentStore = new URLSearchParams(location.search).get('store') || 'tech-store';
+  useEffect(() => {
+    setSelected(current);
+  }, [current]);
 
-  const handleChange = (event: SelectChangeEvent<string>) => {
-    const newStore = event.target.value;
-    const params = new URLSearchParams(location.search);
-    params.set('store', newStore);
-
-    navigate({
-      pathname: location.pathname,
-      search: params.toString(),
-    });
-
-    // Optional: force a full reload if your config is static at bootstrap
-    window.location.reload();
+  const handleChange = (e: any) => {
+    setSelected(e.target.value);
+    onChange(e.target.value);
   };
 
+  const activeStore = STORES.find((s) => s.id === selected) || STORES[0];
+
   return (
-    <FormControl size="small" sx={{ minWidth: 200, mt: 2 }}>
-      <InputLabel id="store-switcher-label">Select Store</InputLabel>
+    <FormControl
+      size="small"
+      variant="outlined"
+      sx={{
+        minWidth: 40,
+        ml: 1.5,
+        '& .MuiInputBase-root': {
+          height: 36,
+          width: 36,
+          borderRadius: '50%',
+          bgcolor: 'white',
+          p: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: 1,
+        },
+        '& .MuiSelect-icon': {
+          display: 'none',
+        },
+      }}
+    >
       <Select
-        labelId="store-switcher-label"
-        value={currentStore}
-        label="Select Store"
+        value={selected}
         onChange={handleChange}
+        IconComponent={ExpandMoreIcon}
+        displayEmpty
+        renderValue={() => (
+          <Tooltip title={activeStore.name}>
+            <Avatar
+              src={activeStore.logo}
+              alt={activeStore.name}
+              sx={{ width: 24, height: 24 }}
+            />
+          </Tooltip>
+        )}
       >
-        {storeOptions.map((store) => (
+        {STORES.map((store) => (
           <MenuItem key={store.id} value={store.id}>
-            {store.label}
+            <Box display="flex" alignItems="center" gap={1}>
+              <Avatar src={store.logo} alt={store.name} sx={{ width: 24, height: 24 }} />
+              {store.name}
+            </Box>
           </MenuItem>
         ))}
       </Select>
     </FormControl>
   );
-};
-
+}
 export default StoreSwitcher;

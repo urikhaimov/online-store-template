@@ -16,8 +16,8 @@ import { RedirectProvider } from './context/RedirectContext';
 import { AuthProvider } from './context/AuthContext';
 import './index.css';
 
-const storeId = getStoreIdFromURL();
-const storeConfig = loadStoreConfig(storeId) ?? defaultConfig;
+const savedStoreId = localStorage.getItem('storeId') || 'store1';
+const storeConfig = loadStoreConfig(savedStoreId) ?? defaultConfig;
 const theme = generateTheme(storeConfig);
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
@@ -25,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <ErrorBoundary fallback={<p>⚠ Something went wrong. Our team has been notified!</p>}>
       <StoreConfigContext.Provider value={storeConfig}>
-       <ThemeProvider storeId={storeId}>
+       <ThemeProvider storeId={savedStoreId}>
           <AuthProvider>
             <QueryClientProvider client={queryClient}>
               <RedirectProvider>
