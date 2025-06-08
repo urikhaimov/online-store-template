@@ -9,7 +9,19 @@ export default function UserProfilePage() {
   }
 
   return (
-    <Box sx={{ maxWidth: 600, mx: 'auto', mt: 4 }}>
+     <Box
+          flexGrow={1}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          px={2}
+          py={4}
+          sx={{
+            width: '100%', // Safe
+            maxWidth: '100vw', // Prevent overflow
+            overflowX: 'hidden', // Enforced here too
+          }}
+        >
       <Paper sx={{ p: 3 }}>
         <Typography variant="h4" gutterBottom>
           My Profile

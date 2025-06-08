@@ -4,7 +4,7 @@ import {
   Box, Button, TextField, Typography, Paper, Stack
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
-import { useAuthStore} from '../../stores/useAuthStore';
+import { useAuthStore } from '../../stores/useAuthStore';
 import { useRedirect } from '../../context/RedirectContext';
 
 type LoginFormInputs = {
@@ -44,13 +44,16 @@ const LoginPage = () => {
 
   return (
     <Box
+      flexGrow={1}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      px={2}
+      py={4}
       sx={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%)',
-        p: 2,
+        width: '100%', // Safe
+        maxWidth: '100vw', // Prevent overflow
+        overflowX: 'hidden', // Enforced here too
       }}
     >
       <Paper elevation={6} sx={{ p: 4, maxWidth: 400, width: '100%', borderRadius: 3 }}>

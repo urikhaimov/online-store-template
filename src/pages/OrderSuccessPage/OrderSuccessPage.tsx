@@ -16,7 +16,19 @@ const OrderSuccessPage: React.FC = () => {
   }, [orderNumber, navigate]);
 
   return (
-    <Box sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
+    <Box
+      flexGrow={1}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      px={2}
+      py={4}
+      sx={{
+        width: '100%', // Safe
+        maxWidth: '100vw', // Prevent overflow
+        overflowX: 'hidden', // Enforced here too
+      }}
+    >
       <Typography variant="h4" gutterBottom align="center">
         🎉 Thank you for your order!
       </Typography>

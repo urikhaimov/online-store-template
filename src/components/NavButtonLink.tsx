@@ -11,10 +11,7 @@ const isAdmin = useIsAdmin();
   return (
     <AppBar position="sticky" sx={{ zIndex: 1300 }}>
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Typography variant="h6" component={Link} to="/" sx={{ color: '#fff', textDecoration: 'none' }}>
-          🛒 My Online Store
-        </Typography>
-
+       
         <Box display="flex" alignItems="center" gap={1}>
           <Button color="inherit" component={Link} to="/">Home</Button>
           <Button color="inherit" component={Link} to="/cart">Cart</Button>

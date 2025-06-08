@@ -54,9 +54,21 @@ export default function HomePage() {
     }
 
     const product = item.data as Product;
-     console.log('Image URL:', product.imageUrls?.[0]);
+    console.log('Image URL:', product.imageUrls?.[0]);
     return (
-      <Box style={style} px={2} py={1}>
+      <Box
+        flexGrow={1}
+        display="flex"
+        justifyContent="center"
+        alignItems="center"
+        px={2}
+        py={4}
+        sx={{
+          width: '100%', // Safe
+          maxWidth: '100vw', // Prevent overflow
+          overflowX: 'hidden', // Enforced here too
+        }}
+      >
         <Card sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
           <CardMedia
             component="img"
@@ -91,18 +103,33 @@ export default function HomePage() {
   };
 
   return (
-    <Box p={2}>
+    <Box
+      flexGrow={1}
+      display="flex"
+      justifyContent="center"
+      alignItems="center"
+      px={2}
+      py={4}
+      sx={{
+        width: '100%', // Safe
+        maxWidth: '100vw', // Prevent overflow
+        overflowX: 'hidden', // Enforced here too
+      }}
+    >
       <Typography variant="h4" gutterBottom>
         Products by Category
       </Typography>
-      <List
-        height={600}
-        itemCount={virtualData.length}
-        itemSize={140}
-        width="100%"
-      >
-        {Row}
-      </List>
+
+      <Box width="100%" maxWidth={900}>
+        <List
+          height={600}
+          itemCount={virtualData.length}
+          itemSize={140}
+          width="100%"
+        >
+          {Row}
+        </List>
+      </Box>
     </Box>
   );
 }

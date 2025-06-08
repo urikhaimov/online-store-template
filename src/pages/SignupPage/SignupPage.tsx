@@ -22,7 +22,19 @@ const onSubmit = async (data: any) => {
 
 
   return (
-    <Box display="flex" justifyContent="center" alignItems="center" minHeight="70vh">
+    <Box
+         flexGrow={1}
+         display="flex"
+         justifyContent="center"
+         alignItems="center"
+         px={2}
+         py={4}
+         sx={{
+           width: '100%', // Safe
+           maxWidth: '100vw', // Prevent overflow
+           overflowX: 'hidden', // Enforced here too
+         }}
+       >
       <Paper elevation={3} sx={{ p: 4, width: 400 }}>
         <Typography variant="h5" gutterBottom>
           Sign Up

@@ -47,42 +47,7 @@ export default function AdminDashboardPage() {
         Admin Dashboard – Categories
       </Typography>
 
-      <Box display="flex" mb={2}>
-        <TextField
-          label="New Category"
-          value={newCategoryName}
-          onChange={(e) => setNewCategoryName(e.target.value)}
-          onKeyDown={handleKeyPress}
-          fullWidth
-        />
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleAddCategory}
-          sx={{ ml: 2 }}
-        >
-          Add
-        </Button>
-      </Box>
-
-      <List>
-        {categories.map((cat) => (
-          <ListItem
-            key={cat.id}
-            secondaryAction={
-              <IconButton
-                edge="end"
-                color="error"
-                onClick={() => handleDeleteCategory(cat.id)}
-              >
-                <DeleteIcon />
-              </IconButton>
-            }
-          >
-            <ListItemText primary={cat.name} />
-          </ListItem>
-        ))}
-      </List>
+      
     </Box>
   );
 }

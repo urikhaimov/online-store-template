@@ -10,7 +10,19 @@ export default function ProductPage() {
   if (!product) return <Typography>Product not found.</Typography>;
 
   return (
-    <Box p={3}>
+    <Box
+         flexGrow={1}
+         display="flex"
+         justifyContent="center"
+         alignItems="center"
+         px={2}
+         py={4}
+         sx={{
+           width: '100%', // Safe
+           maxWidth: '100vw', // Prevent overflow
+           overflowX: 'hidden', // Enforced here too
+         }}
+       >
       <Typography variant="h4">{product.name}</Typography>
       <Typography>{product.description}</Typography>
       <Typography>Price: ${product.price}</Typography>

@@ -49,10 +49,6 @@ const Navbar = () => {
 
   const drawer = (
     <Box onClick={toggleDrawer} sx={{ width: 250 }}>
-      <Typography variant="h6" sx={{ p: 2 }}>
-        🛒 My Online Store
-      </Typography>
-      <Divider />
       <List>
         {navLinks.map((link, index) => (
           <ListItem
@@ -84,14 +80,7 @@ const Navbar = () => {
                 <MenuIcon />
               </IconButton>
             )}
-            <Typography
-              variant="h6"
-              component={Link}
-              to="/"
-              sx={{ textDecoration: 'none', color: 'inherit' }}
-            >
-              My Online Store
-            </Typography>
+          
           </Box>
 
           {!isMobile && (

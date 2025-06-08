@@ -98,7 +98,19 @@ export default function MyOrdersPage() {
   if (!orders || orders.length === 0) return <Typography>No orders found.</Typography>;
 
   return (
-    <Box>
+     <Box
+         flexGrow={1}
+         display="flex"
+         justifyContent="center"
+         alignItems="center"
+         px={2}
+         py={4}
+         sx={{
+           width: '100%', // Safe
+           maxWidth: '100vw', // Prevent overflow
+           overflowX: 'hidden', // Enforced here too
+         }}
+       >
       <Typography variant="h4" gutterBottom>
         My Orders
       </Typography>

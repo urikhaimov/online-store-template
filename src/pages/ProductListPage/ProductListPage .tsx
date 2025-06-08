@@ -9,6 +9,7 @@ import {
   TextField,
   CircularProgress,
   Container,
+  Box
 } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../api/firebase';
@@ -117,57 +118,71 @@ const ProductListPage: React.FC = () => {
   }
 
   return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Product List
-      </Typography>
+     <Box
+          flexGrow={1}
+          display="flex"
+          justifyContent="center"
+          alignItems="center"
+          px={2}
+          py={4}
+          sx={{
+            width: '100%', // Safe
+            maxWidth: '100vw', // Prevent overflow
+            overflowX: 'hidden', // Enforced here too
+          }}
+        >
+      <Container sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Product List
+        </Typography>
 
-      <TextField
-        label="Search products"
-        variant="outlined"
-        fullWidth
-        value={state.search}
-        onChange={e => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
-        sx={{ mb: 3 }}
-      />
+        <TextField
+          label="Search products"
+          variant="outlined"
+          fullWidth
+          value={state.search}
+          onChange={e => dispatch({ type: 'SET_SEARCH', payload: e.target.value })}
+          sx={{ mb: 3 }}
+        />
 
-      <Grid container spacing={3}>
-        {filteredProducts.map(product => (
-          <Grid item xs={12} sm={6} md={4} key={product.id}>
-            <Card>
-              <CardContent>
-                <Typography variant="h6">{product.name}</Typography>
-                <Typography variant="body2">Price: ${product.price}</Typography>
-                <Typography variant="body2">Stock: {product.stock}</Typography>
-              </CardContent>
-              <CardActions>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => handleAddToCart(product)}
-                >
-                  Add to Cart
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="secondary"
-                  onClick={() => handleUpdate(product.id)}
-                >
-                  Update
-                </Button>
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={() => handleDelete(product.id)}
-                >
-                  Delete
-                </Button>
-              </CardActions>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
-    </Container>
+        <Grid container spacing={3}>
+          {filteredProducts.map(product => (
+            <Grid item xs={12} sm={6} md={4} key={product.id}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h6">{product.name}</Typography>
+                  <Typography variant="body2">Price: ${product.price}</Typography>
+                  <Typography variant="body2">Stock: {product.stock}</Typography>
+                </CardContent>
+                <CardActions>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => handleAddToCart(product)}
+                  >
+                    Add to Cart
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    onClick={() => handleUpdate(product.id)}
+                  >
+                    Update
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={() => handleDelete(product.id)}
+                  >
+                    Delete
+                  </Button>
+                </CardActions>
+              </Card>
+            </Grid>
+          ))}
+        </Grid>
+      </Container>
+    </Box>
   );
 };
 

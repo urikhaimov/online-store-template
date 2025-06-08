@@ -1,18 +1,20 @@
 import React from 'react';
 import { AppBar, Toolbar, Typography, Box } from '@mui/material';
-import  CartButton  from './CartButton';
+import Navbar from './Navbar';
 
-export const Header: React.FC = () => {
+const Header: React.FC = () => {
   return (
     <AppBar position="static">
       <Toolbar>
         <Typography variant="h6" sx={{ flexGrow: 1 }}>
           My Online Store
         </Typography>
+
         <Box>
-          <CartButton />
+          <Navbar />
         </Box>
       </Toolbar>
     </AppBar>
   );
 };
+export default Header;

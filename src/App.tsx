@@ -14,8 +14,8 @@ import LoginPage from './pages/LoginPage/LoginPage';
 import SignupPage from './pages/SignupPage/SignupPage';
 import MyOrdersPage from './pages/MyOrdersPage/MyOrdersPage';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
-import Layout from './layouts/Layout';
-import AdminDashboardLayout from './layouts/AdminDashboardLayout';
+import Layout from './layouts/MainLayout';
+import AdminDashboardLayout from './layouts/AdminDashboardLayout/AdminDashboardLayout';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage/AdminDashboardPage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategoriesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
@@ -29,7 +29,7 @@ import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
 
 import { useAppTheme } from './hooks/useAppTheme';
 import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
-import logo from './assets/logo.png';
+import './App.css'
 
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
@@ -59,12 +59,13 @@ export default function App() {
     return (
       <Box
         height="100vh"
+        width="100vw"
         display="flex"
         alignItems="center"
         justifyContent="center"
-        bgcolor="#fff"
+        bgcolor={theme.palette.background.default}
       >
-        <img src={logo} alt="Loading..." style={{ width: 120, opacity: 0.9 }} />
+        <CircularProgress size={60} color="primary" />
       </Box>
     );
   }
@@ -77,14 +78,22 @@ export default function App() {
         <Layout>
           <Routes>
             <Route path="/" element={<HomePage />} />
-
             <Route path="/product/:id" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route
               path="/checkout"
               element={
                 <ProtectedRoute>
-                  <CheckoutPage />
+                  <CheckoutPage
+                    items={[]}
+                    total={0}
+                    onSubmit={() => { }}
+                    loading={false}
+                    success={false}
+                    register={() => { }}
+                    errors={{}}
+                    handleSubmit={(fn: any) => (e: any) => fn(e)}
+                  />
                 </ProtectedRoute>
               }
             />
