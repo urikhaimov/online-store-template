@@ -1,9 +1,14 @@
-// ✅ Cleaned and Fixed App.tsx
+// src/App.tsx
 import React, { useEffect, useRef } from 'react';
 import { Routes, Route, useNavigate } from 'react-router-dom';
-
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import {
+  ThemeProvider as MuiThemeProvider,
+  CssBaseline,
+  CircularProgress,
+  Box,
+} from '@mui/material';
 
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoutes';
 import HomePage from './pages/HomePage/HomePage';
@@ -21,27 +26,26 @@ import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategori
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage/AdminProductsPage';
-import { useRedirect } from './context/RedirectContext';
-import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
-import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
 import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
 import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
 
-import { useAppTheme } from './hooks/useAppTheme';
-import { ThemeProvider, CssBaseline, CircularProgress, Box } from '@mui/material';
-import './App.css'
+import { useRedirect } from './context/RedirectContext';
+import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
+import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
+import { useThemeContext } from './context/ThemeContext';
+
+import './App.css';
 
 const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
 
 export default function App() {
-
   useFirebaseAuthListener();
   const navigate = useNavigate();
   const { user, loading } = useAuthStore();
   const isAdmin = useIsAdmin();
   const hasRedirected = useRef(false);
   const { consumeRedirect } = useRedirect();
-  const { theme, isLoading } = useAppTheme();
+  const { muiTheme, isLoading } = useThemeContext();
 
   useEffect(() => {
     if (loading || hasRedirected.current) return;
@@ -54,8 +58,10 @@ export default function App() {
       hasRedirected.current = true;
     }
   }, [user, loading, isAdmin, navigate]);
-
-  if (isLoading) {
+   console.log('App rendered with user:', user);
+   console.log(isLoading, 'Loading state:', loading);
+   console.log ('MUI Theme:', muiTheme);
+  if (isLoading || !muiTheme) {
     return (
       <Box
         height="100vh"
@@ -63,16 +69,15 @@ export default function App() {
         display="flex"
         alignItems="center"
         justifyContent="center"
-        bgcolor={theme.palette.background.default}
+        bgcolor={muiTheme?.palette.background.default || '#fff'}
       >
         <CircularProgress size={60} color="primary" />
       </Box>
     );
   }
 
-
   return (
-    <ThemeProvider theme={theme}>
+    <MuiThemeProvider theme={muiTheme}>
       <Elements stripe={stripePromise}>
         <CssBaseline />
         <Layout>
@@ -87,10 +92,10 @@ export default function App() {
                   <CheckoutPage
                     items={[]}
                     total={0}
-                    onSubmit={() => { }}
+                    onSubmit={() => {}}
                     loading={false}
                     success={false}
-                    register={() => { }}
+                    register={() => {}}
                     errors={{}}
                     handleSubmit={(fn: any) => (e: any) => fn(e)}
                   />
@@ -121,13 +126,12 @@ export default function App() {
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="products/edit/:productId" element={<EditProductPage />} />
-
               <Route path="products/new" element={<AddProductPage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>
         </Layout>
       </Elements>
-    </ThemeProvider>
+    </MuiThemeProvider>
   );
 }

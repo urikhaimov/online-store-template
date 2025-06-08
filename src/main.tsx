@@ -6,7 +6,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './api/queryClient';
 import { StoreConfigContext, defaultConfig } from './context/StoreConfigContext';
 import { ErrorBoundary } from '@sentry/react';
-import { ThemeProvider } from '@mui/material/styles';
+import { ThemeProvider } from './context/ThemeContext'; // ✅ must be YOUR version
 
 import { BrowserRouter } from 'react-router-dom';
 import { getStoreIdFromURL } from './utils/getStoreIdFromURL';
@@ -25,7 +25,7 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   <BrowserRouter>
     <ErrorBoundary fallback={<p>⚠ Something went wrong. Our team has been notified!</p>}>
       <StoreConfigContext.Provider value={storeConfig}>
-        <ThemeProvider theme={theme}>
+       <ThemeProvider storeId={storeId}>
           <AuthProvider>
             <QueryClientProvider client={queryClient}>
               <RedirectProvider>

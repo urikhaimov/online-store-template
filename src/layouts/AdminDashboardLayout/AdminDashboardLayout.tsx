@@ -1,6 +1,6 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { Box, List, ListItemButton, ListItemText, Typography, Divider } from '@mui/material';
-
+import ThemeToggleButton from '../../components/ThemeToggleButton';
 export default function AdminDashboardLayout() {
   const navItems = [
     { label: 'Dashboard Home', to: '/admin' },
@@ -33,6 +33,7 @@ export default function AdminDashboardLayout() {
         <Typography variant="h6" gutterBottom>
           Admin Panel
         </Typography>
+         <ThemeToggleButton />
         <Divider sx={{ mb: 2 }} />
         <List disablePadding>
           {navItems.map(({ label, to }) => (
