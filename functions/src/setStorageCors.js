@@ -11,7 +11,7 @@ const serviceAccount = JSON.parse(
 console.log('🔐 Initializing Firebase Admin with explicit credentials...');
 initializeApp({
   credential: cert(serviceAccount),
-  storageBucket: 'onlinestoretemplate-59d3e.appspot.com',
+  storageBucket: "onlinestoretemplate-59d3e.firebasestorage.app",
 });
 
 const storage = getStorage();

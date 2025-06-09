@@ -10,17 +10,35 @@ import {
   getDocs
 } from 'firebase/firestore';
 import {
+  getStorage,
   ref,
   uploadBytes,
+  uploadBytesResumable,
   getDownloadURL,
   listAll, deleteObject
 } from 'firebase/storage';
-import type { NewProduct, Product } from '../types/firebase';
+import type { Product } from '../types/firebase';
+import { app } from '../api/firebase';
 import { query, where } from 'firebase/firestore';
+import { uploadFilesAndReturnUrls } from '../utils/uploadFilesAndReturnUrls';
 
+type NewProduct = Omit<Product, 'id' | 'imageUrls'> & {
+  images: File[];
+};
 
+export async function createProduct(product: NewProduct): Promise<void> {
+  const { name, description, price, stock, categoryId, images } = product;
+  const imageUrls = await uploadFilesAndReturnUrls(images, 'products');
 
-
+  await addDoc(collection(db, 'products'), {
+    name,
+    description,
+    price,
+    stock,
+    categoryId,
+    imageUrls,
+  });
+}
 
 
 export async function fetchProducts(): Promise<Product[]> {
@@ -73,48 +91,4 @@ export async function deleteProduct(productId: string): Promise<void> {
 export async function updateProduct(productId: string, data: Partial<Omit<Product, 'id'>>): Promise<void> {
   const ref = doc(db, 'products', productId);
   await updateDoc(ref, data);
-}
-export async function createProduct(data: NewProduct): Promise<Product> {
-  const {
-    name,
-    description,
-    price,
-    stock,
-    categoryId,
-    images,
-  } = data;
-
-  // Step 1: Create the product document with initial fields (excluding imageUrls)
-  const productRef = await addDoc(collection(db, 'products'), {
-    name,
-    description,
-    price,
-    stock: stock ?? 0, // ✅ stock is required, fallback to 0 if missing
-    categoryId,
-    imageUrls: [],
-  });
-
-  // Step 2: Upload images to Firebase Storage
-  const urls: string[] = [];
-
-  for (const file of images) {
-    const fileRef = ref(storage, `products/${productRef.id}/${file.name}`);
-    await uploadBytes(fileRef, file);
-    const url = await getDownloadURL(fileRef);
-    urls.push(url);
-  }
-
-  // Step 3: Update product document with image URLs
-  await updateDoc(productRef, { imageUrls: urls });
-
-  // Step 4: Return fully typed product object
-  return {
-    id: productRef.id,
-    name,
-    description,
-    price,
-    stock: stock ?? 0,
-    categoryId,
-    imageUrls: urls,
-  };
 }

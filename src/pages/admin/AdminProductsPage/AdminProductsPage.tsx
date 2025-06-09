@@ -21,7 +21,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { useAllProducts } from '../../../hooks/useProducts';
 import { useProductMutations } from '../../../hooks/useProductMutations';
-
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
 export default function AdminProductsPage() {
   const { data: products = [] } = useAllProducts();
   const { remove } = useProductMutations();
@@ -50,11 +50,7 @@ export default function AdminProductsPage() {
   };
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Admin – Products
-      </Typography>
-
+    <AdminPageLayout title="Products">
       <Button
         variant="contained"
         onClick={() => navigate('/admin/products/add')}
@@ -113,6 +109,6 @@ export default function AdminProductsPage() {
           {successMessage}
         </Alert>
       </Snackbar>
-    </Box>
+    </AdminPageLayout>
   );
 }

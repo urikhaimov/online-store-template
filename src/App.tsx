@@ -26,8 +26,7 @@ import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategori
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage/AdminProductsPage';
-import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
-import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
+import ProductFormPage from './pages/admin/AdminProductsPage/ProductFormPage';
 import AdminThemePage from './pages/admin/AdminThemePage/ThemePage';
 import { useRedirect } from './context/RedirectContext';
 import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
@@ -123,8 +122,8 @@ export default function App() {
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
-              <Route path="products/edit/:productId" element={<EditProductPage />} />
-              <Route path="products/new" element={<AddProductPage />} />
+               <Route path="products/add" element={<ProductFormPage mode="add" />} />
+                <Route path="products/edit/:productId" element={<ProductFormPage mode="edit" />} />
               <Route path="theme" element={<AdminThemePage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />

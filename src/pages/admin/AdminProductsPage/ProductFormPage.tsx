@@ -1,4 +1,3 @@
-// src/pages/admin/EditProductPage.tsx
 import {
   Box,
   Button,
@@ -11,19 +10,17 @@ import {
   Alert,
   IconButton,
   Grid,
-  LinearProgress,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { useEffect, useReducer, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
-import { fetchCategories } from '../../../api/categories';
-import { getProductById, updateProduct } from '../../../api/products';
-import type { Category, Product } from '../../../types/firebase';
-import { getStorage, ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
-import { app  } from '../../../api/firebase';
-//import { arrayMoveImmutable } from 'array-move';
 import { useDropzone } from 'react-dropzone';
+import { fetchCategories } from '../../../api/categories';
+import { getProductById, updateProduct, createProduct } from '../../../api/products';
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
+import { uploadFilesAndReturnUrls } from '../../../utils/uploadFilesAndReturnUrls';
+import type { Category, Product } from '../../../types/firebase';
 
 type FormState = {
   name: string;
@@ -34,19 +31,21 @@ type FormState = {
   imageUrls: string[];
 };
 
-const MAX_IMAGES = 5;
-const MAX_FILE_SIZE = 2 * 1024 * 1024;
+type Props = {
+  mode: 'add' | 'edit';
+};
 
-export default function EditProductPage() {
+export default function ProductFormPage({ mode }: Props) {
+  const isEdit = mode === 'edit';
   const { productId } = useParams();
   const navigate = useNavigate();
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [product, setProduct] = useState<Product | null | undefined>(undefined);
-  const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [success, setSuccess] = useState(false);
 
-  const storage = getStorage(app);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [product, setProduct] = useState<Product | null | undefined>(isEdit ? undefined : null);
+  const [success, setSuccess] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
+
   const {
     control,
     register,
@@ -68,7 +67,7 @@ export default function EditProductPage() {
   useEffect(() => {
     fetchCategories().then(setCategories);
 
-    if (productId) {
+    if (isEdit && productId) {
       getProductById(productId)
         .then((prod) => {
           if (prod) {
@@ -84,90 +83,84 @@ export default function EditProductPage() {
             Object.entries(defaults).forEach(([key, val]) =>
               setValue(key as keyof FormState, val)
             );
+            setPreviewUrls(prod.imageUrls || []);
           } else {
             setProduct(null);
           }
         })
-        .catch((err) => {
-          console.error('❌ Error loading product:', err);
-          setProduct(null);
-        });
+        .catch(() => setProduct(null));
     }
-  }, [productId, setValue]);
+  }, [isEdit, productId, setValue]);
 
   const onDrop = async (acceptedFiles: File[]) => {
-    const current = getValues('imageUrls');
-    if (current.length + acceptedFiles.length > MAX_IMAGES) {
+    const MAX_IMAGES = 5;
+    const MAX_FILE_SIZE = 2 * 1024 * 1024;
+    const currentUrls = getValues('imageUrls');
+
+    if (currentUrls.length + acceptedFiles.length > MAX_IMAGES) {
       alert('Max 5 images allowed');
       return;
     }
 
-    for (const file of acceptedFiles) {
-      if (!file.type.startsWith('image/') || file.size > MAX_FILE_SIZE) {
-        alert('Only images under 2MB allowed');
-        continue;
+    const validFiles = acceptedFiles.filter((file) => {
+      if (!file.type.startsWith('image/')) {
+        alert(`${file.name} is not a valid image.`);
+        return false;
       }
+      if (file.size > MAX_FILE_SIZE) {
+        alert(`${file.name} is too large (max 2MB).`);
+        return false;
+      }
+      return true;
+    });
 
-      const storageRef = ref(storage, `products/${productId}/${file.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, file);
+    if (validFiles.length === 0) return;
 
-      setUploading(true);
-
-      uploadTask.on(
-        'state_changed',
-        (snap) => {
-          const percent = Math.round((snap.bytesTransferred / snap.totalBytes) * 100);
-          setUploadProgress(percent);
-        },
-        (error) => {
-          console.error(error);
-          setUploading(false);
-        },
-        async () => {
-          const url = await getDownloadURL(uploadTask.snapshot.ref);
-          const updated = [...getValues('imageUrls'), url];
-          setValue('imageUrls', updated);
-          setUploading(false);
-        }
-      );
+    setUploading(true);
+    try {
+      const urls = await uploadFilesAndReturnUrls(validFiles, 'products');
+      const updatedUrls = [...currentUrls, ...urls];
+      setValue('imageUrls', updatedUrls);
+      setPreviewUrls(updatedUrls);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Image upload failed. Try again.');
     }
+    setUploading(false);
   };
 
   const { getRootProps, getInputProps } = useDropzone({ onDrop });
 
-  const onDeleteImage = (url: string) => {
-    const updated = getValues('imageUrls').filter((img) => img !== url);
-    setValue('imageUrls', updated);
-  };
-
   const onSubmit = async (data: FormState) => {
-    if (!productId) return;
     try {
-      await updateProduct(productId, {
+      const payload = {
         name: data.name,
         description: data.description,
         price: Number(data.price),
         stock: Number(data.stock),
         categoryId: data.categoryId,
         imageUrls: data.imageUrls,
-      });
+      };
+
+      if (isEdit && productId) {
+        await updateProduct(productId, payload);
+      } else {
+        await createProduct({ ...payload, images: [] }); // images already uploaded
+      }
+
       setSuccess(true);
       setTimeout(() => navigate('/admin/products'), 1000);
     } catch (err) {
-      console.error('❌ Update failed:', err);
+      console.error('Save failed:', err);
     }
   };
 
-  if (product === undefined) return <CircularProgress sx={{ mt: 4 }} />;
-  if (product === null)
-    return <Typography sx={{ mt: 4 }}>❌ Product not found or failed to load.</Typography>;
+  if (isEdit && product === undefined) return <CircularProgress sx={{ mt: 4 }} />;
+  if (isEdit && product === null)
+    return <Typography sx={{ mt: 4 }}>❌ Product not found.</Typography>;
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Edit Product
-      </Typography>
-
+    <AdminPageLayout title={isEdit ? 'Edit Product' : 'Add Product'}>
       <Paper sx={{ p: 3, maxWidth: 700 }}>
         <form onSubmit={handleSubmit(onSubmit)}>
           <TextField
@@ -235,38 +228,43 @@ export default function EditProductPage() {
               <input {...getInputProps()} />
               <Typography>Drag & drop or click to upload (max 5)</Typography>
             </Box>
-            {uploading && <LinearProgress variant="determinate" value={uploadProgress} sx={{ mt: 1 }} />}
           </Box>
 
-          <Controller
-            name="imageUrls"
-            control={control}
-            render={({ field }) => (
-              <Grid container spacing={2} sx={{ mt: 1 }}>
-                {field.value.map((url) => (
-                  <Grid item key={url}>
-                    <Box position="relative">
-                      <img src={url} alt="product" width={100} height={100} style={{ borderRadius: 8 }} />
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          const updated = field.value.filter((u) => u !== url);
-                          field.onChange(updated);
-                        }}
-                        sx={{ position: 'absolute', top: 0, right: 0, bgcolor: 'white' }}
-                      >
-                        <DeleteIcon fontSize="small" />
-                      </IconButton>
-                    </Box>
-                  </Grid>
-                ))}
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            {previewUrls.map((url, index) => (
+              <Grid item key={url}>
+                <Box position="relative">
+                  <img
+                    src={url}
+                    alt={`preview-${index}`}
+                    width={100}
+                    height={100}
+                    style={{ borderRadius: 8 }}
+                  />
+                  <IconButton
+                    size="small"
+                    onClick={() => {
+                      const filtered = getValues('imageUrls').filter((u) => u !== url);
+                      setValue('imageUrls', filtered);
+                      setPreviewUrls((prev) => prev.filter((p) => p !== url));
+                    }}
+                    sx={{
+                      position: 'absolute',
+                      top: 0,
+                      right: 0,
+                      bgcolor: 'white',
+                    }}
+                  >
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Box>
               </Grid>
-            )}
-          />
+            ))}
+          </Grid>
 
           <Box mt={3}>
-            <Button variant="contained" type="submit" disabled={uploading}>
-              Save Changes
+            <Button type="submit" variant="contained" disabled={uploading}>
+              {uploading ? 'Uploading...' : isEdit ? 'Save Changes' : 'Add Product'}
             </Button>
           </Box>
         </form>
@@ -274,9 +272,9 @@ export default function EditProductPage() {
 
       <Snackbar open={success} autoHideDuration={3000} onClose={() => setSuccess(false)}>
         <Alert severity="success" sx={{ width: '100%' }}>
-          Product updated successfully!
+          Product {isEdit ? 'updated' : 'created'} successfully!
         </Alert>
       </Snackbar>
-    </Box>
+    </AdminPageLayout>
   );
 }
