@@ -23,9 +23,9 @@ export default function AdminDashboardPage() {
   return (
     <Box p={3}>
       <Typography variant="h4" gutterBottom>
-        Admin Dashboard – Themes
+        Admin Dashboard
       </Typography>
-      <ThemePanel/>
+     
       
     </Box>
   );

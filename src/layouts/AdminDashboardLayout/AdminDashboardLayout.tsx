@@ -28,7 +28,7 @@ export default function AdminDashboardLayout() {
   });
 
   return (
-    <Box display="flex" height="100vh" overflow="hidden">
+    <Box display="flex" overflow="hidden">
       {/* Sidebar */}
       <Box
         component="aside"
@@ -66,19 +66,13 @@ export default function AdminDashboardLayout() {
       </Box>
 
       {/* Main content and footer */}
-      <Box
-        component="main"
-        display="flex"
-        flexDirection="column"
-        flexGrow={1}
-        height="100vh"
-      >
+      
         <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
           <Outlet />
         </Box>
 
        
-      </Box>
+    
     </Box>
   );
 }
