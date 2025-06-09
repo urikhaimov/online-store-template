@@ -28,7 +28,7 @@ import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage/AdminProductsPage';
 import AddProductPage from './pages/admin/AdminProductsPage/AddProductPage';
 import EditProductPage from './pages/admin/AdminProductsPage/EditProductPage';
-
+import AdminThemePage from './pages/admin/AdminThemePage/ThemePage';
 import { useRedirect } from './context/RedirectContext';
 import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
 import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
@@ -46,7 +46,7 @@ export default function App() {
   const hasRedirected = useRef(false);
   const { consumeRedirect } = useRedirect();
   const { theme, isLoading } = useThemeContext();
-
+ 
   useEffect(() => {
     if (loading || hasRedirected.current) return;
 
@@ -125,6 +125,7 @@ export default function App() {
               <Route path="products" element={<AdminProductsPage />} />
               <Route path="products/edit/:productId" element={<EditProductPage />} />
               <Route path="products/new" element={<AddProductPage />} />
+              <Route path="theme" element={<AdminThemePage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
           </Routes>

@@ -1,16 +1,22 @@
+// src/components/ThemeToggleButton.tsx
+import { Switch, FormControlLabel, SxProps } from '@mui/material';
 import { useThemeContext } from '../context/ThemeContext';
-import { IconButton, Tooltip } from '@mui/material';
-import LightModeIcon from '@mui/icons-material/LightMode';
-import DarkModeIcon from '@mui/icons-material/DarkMode';
+import React from 'react';
 
-export default function ThemeToggleButton() {
+type Props = {
+  sx?: SxProps; // <-- add this
+};
+
+export default function ThemeToggleButton({ sx }: Props) {
   const { mode, toggleMode } = useThemeContext();
 
   return (
-    <Tooltip title={`Switch to ${mode === 'dark' ? 'light' : 'dark'} mode`}>
-      <IconButton color="inherit" onClick={toggleMode}>
-        {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
-      </IconButton>
-    </Tooltip>
+    <FormControlLabel
+      sx={sx} // <-- apply it
+      control={
+        <Switch checked={mode === 'dark'} onChange={toggleMode} color="primary" />
+      }
+      label="Dark Mode"
+    />
   );
 }
