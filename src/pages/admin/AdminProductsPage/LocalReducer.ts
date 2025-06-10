@@ -1,6 +1,9 @@
 import { Dayjs } from 'dayjs';
+import {Category, Product} from '../../../types/firebase' 
 
-interface State {
+
+
+ interface State {
     deleteDialogOpen: boolean;
     selectedProductId: string | null;
     successMessage: string;
@@ -11,7 +14,7 @@ interface State {
     pageSize: number;
 }
 
-type Action =
+ type Action =
     | { type: 'OPEN_DELETE_DIALOG'; payload: string }
     | { type: 'CLOSE_DELETE_DIALOG' }
     | { type: 'SET_SUCCESS_MESSAGE'; payload: string }
@@ -21,7 +24,7 @@ type Action =
     | { type: 'SET_CREATED_AFTER'; payload: Dayjs | null } // ✅ fixed here
     | { type: 'INCREMENT_PAGE'; payload: number }; // ✅ fixed here
 
-const initialState: State = {
+ const initialState: State = {
     deleteDialogOpen: false,
     selectedProductId: null,
     successMessage: '',
@@ -31,6 +34,10 @@ const initialState: State = {
     page: 1,
     pageSize: 10,
 };
+
+export type VirtualRow = 
+  | { type: 'category'; data: Category }
+  | { type: 'product'; data: Product };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {

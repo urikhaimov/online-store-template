@@ -3,7 +3,7 @@ import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
-
+import { setLogLevel } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: "AIzaSyD3NlV8DFRgJPAio26-PgLerVK-ECwGteo",
@@ -23,3 +23,4 @@ export const auth = getAuth(app);
 
 export const db = getFirestore(app); // ✅ This is the missing export
 export const storage = getStorage(app)
+setLogLevel('debug');
