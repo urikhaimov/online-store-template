@@ -21,13 +21,13 @@ import MyOrdersPage from './pages/MyOrdersPage/MyOrdersPage';
 import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
 import Layout from './layouts/MainLayout';
 import AdminDashboardLayout from './layouts/AdminDashboardLayout/AdminDashboardLayout';
-import AdminDashboardPage from './pages/admin/AdminDashboardPage/AdminDashboardPage';
+import AdminThemePage from './pages/admin/AdminThemePage/ThemePage';
 import AdminCategoriesPage from './pages/admin/AdminCategoriesPage/AdminCategoriesPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage/AdminUsersPage';
 import AdminLogsPage from './pages/admin/AdminLogsPage/AdminLogsPage';
 import AdminProductsPage from './pages/admin/AdminProductsPage/AdminProductsPage';
 import ProductFormPage from './pages/admin/AdminProductsPage/ProductFormPage';
-import AdminThemePage from './pages/admin/AdminThemePage/ThemePage';
+import AdminHomePage from './pages/admin/AdminHomePage/AdminHomePage';
 import { useRedirect } from './context/RedirectContext';
 import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
 import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
@@ -117,7 +117,7 @@ export default function App() {
                 </AdminProtectedRoute>
               }
             >
-              <Route index element={<AdminDashboardPage />} />
+              <Route index element={<AdminHomePage />} />
               <Route path="categories" element={<AdminCategoriesPage />} />
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />

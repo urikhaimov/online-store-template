@@ -12,6 +12,9 @@ import {
 import { fetchCategories } from '../../../api/categories';
 import { useProductsByCategory } from '../../../hooks/useProducts';
 import type { Category } from '../../../types/firebase';
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
+
+
 
 export default function ProductListPage() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -21,41 +24,44 @@ export default function ProductListPage() {
   }, []);
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        All Products by Category
-      </Typography>
 
-      {categories.length === 0 && <CircularProgress />}
+    <AdminPageLayout title='All Products by Category'>
+      <Box p={3}>
+        <Typography variant="h4" gutterBottom>
 
-      {categories.map((cat) => {
-        const { data: products, isLoading } = useProductsByCategory(cat.id);
+        </Typography>
 
-        return (
-          <Paper key={cat.id} sx={{ mb: 3, p: 2 }}>
-            <Typography variant="h6" gutterBottom>
-              {cat.name}
-            </Typography>
+        {categories.length === 0 && <CircularProgress />}
 
-            {isLoading ? (
-              <CircularProgress size={24} />
-            ) : (
-              <List>
-                {(products || []).map((prod) => (
-                  <ListItem key={prod.id}>
-                    <ListItemText
-                      primary={prod.name}
-                      secondary={`$${prod.price} • ${prod.stock} in stock`}
-                    />
-                  </ListItem>
-                ))}
-              </List>
-            )}
+        {categories.map((cat) => {
+          const { data: products, isLoading } = useProductsByCategory(cat.id);
 
-            <Divider />
-          </Paper>
-        );
-      })}
-    </Box>
+          return (
+            <Paper key={cat.id} sx={{ mb: 3, p: 2 }}>
+              <Typography variant="h6" gutterBottom>
+                {cat.name}
+              </Typography>
+
+              {isLoading ? (
+                <CircularProgress size={24} />
+              ) : (
+                <List>
+                  {(products || []).map((prod) => (
+                    <ListItem key={prod.id}>
+                      <ListItemText
+                        primary={prod.name}
+                        secondary={`$${prod.price} • ${prod.stock} in stock`}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              )}
+
+              <Divider />
+            </Paper>
+          );
+        })}
+      </Box>
+    </AdminPageLayout>
   );
 }

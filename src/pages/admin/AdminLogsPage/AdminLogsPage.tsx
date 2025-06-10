@@ -15,6 +15,10 @@ import {
 } from '@mui/material';
 import { fetchLogs, fetchLogsByCategory, LogEntry } from '../../../api/logs';
 import { SelectChangeEvent } from '@mui/material';
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
+
+
+
 const AdminLogsPage: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,16 +44,13 @@ const AdminLogsPage: React.FC = () => {
     loadLogs();
   }, [categoryFilter]);
 
- const handleCategoryChange = (event: SelectChangeEvent<string>) => {
-  setCategoryFilter(event.target.value);
-};
+  const handleCategoryChange = (event: SelectChangeEvent<string>) => {
+    setCategoryFilter(event.target.value);
+  };
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Typography variant="h4" gutterBottom>
-        Admin Logs
-      </Typography>
 
+    <AdminPageLayout title={'Admin Logs'}>
       <FormControl sx={{ mb: 2, minWidth: 200 }}>
         <InputLabel>Filter by Category</InputLabel>
         <Select
@@ -91,7 +92,7 @@ const AdminLogsPage: React.FC = () => {
           )}
         </Paper>
       )}
-    </Box>
+    </AdminPageLayout>
   );
 };
 

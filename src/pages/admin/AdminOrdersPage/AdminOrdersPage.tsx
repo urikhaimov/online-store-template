@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { db } from '../../../firebase';
 import { collection, getDocs } from 'firebase/firestore';
 import { Box, Typography, Paper } from '@mui/material';
-
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
 interface Order {
   id: string;
   userId: string;
@@ -26,9 +26,11 @@ export default function AdminOrdersPage() {
     fetchOrders();
   }, []);
 
-  return (
-    <Box>
-      <Typography variant="h4">Admin Orders</Typography>
+  return
+  (
+
+    <AdminPageLayout title={'Admin Orders'}>
+
       {orders.map((order) => (
         <Paper key={order.id} sx={{ p: 2, mb: 2 }}>
           <Typography>Order ID: {order.id}</Typography>
@@ -39,6 +41,7 @@ export default function AdminOrdersPage() {
           </Typography>
         </Paper>
       ))}
-    </Box>
+
+    </AdminPageLayout>
   );
 }

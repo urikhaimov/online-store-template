@@ -20,6 +20,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
 
 interface User {
   id: string;
@@ -97,61 +98,52 @@ export default function AdminUsersPage() {
   if (error) return <Typography p={4}>❌ Error loading users</Typography>;
 
   return (
-  <Box
-  sx={{
-    height: '100%',
-    overflowY: 'auto',
-    p: 3, // padding applied here
-  }}
->
-  <Typography variant="h4" gutterBottom>
-    Manage Users
-  </Typography>
+    <AdminPageLayout title={' Manage Users'}>
 
-  <List>
-    {users.map((user) => (
-      <ListItem key={user.id} divider sx={{ display: 'flex', alignItems: 'center' }}>
-        <ListItemText
-          primary={user.email}
-          secondary={`Current role: ${user.role}`}
-          sx={{ flex: 1 }}
-        />
-        <Select
-          size="small"
-          value={user.role}
-          onChange={(e) => handleRoleChange(user.id, e.target.value)}
-          sx={{ mr: 2, minWidth: 120 }}
-        >
-          <MenuItem value="user">User</MenuItem>
-          <MenuItem value="admin">Admin</MenuItem>
-          <MenuItem value="superadmin">Superadmin</MenuItem>
-        </Select>
-        <IconButton
-          onClick={() => dispatch({ type: 'OPEN_CONFIRM', payload: { id: user.id, email: user.email } })}
-          color="error"
-        >
-          <DeleteIcon />
-        </IconButton>
-      </ListItem>
-    ))}
-  </List>
+      <List>
+        {users.map((user) => (
+          <ListItem key={user.id} divider sx={{ display: 'flex', alignItems: 'center' }}>
+            <ListItemText
+              primary={user.email}
+              secondary={`Current role: ${user.role}`}
+              sx={{ flex: 1 }}
+            />
+            <Select
+              size="small"
+              value={user.role}
+              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+              sx={{ mr: 2, minWidth: 120 }}
+            >
+              <MenuItem value="user">User</MenuItem>
+              <MenuItem value="admin">Admin</MenuItem>
+              <MenuItem value="superadmin">Superadmin</MenuItem>
+            </Select>
+            <IconButton
+              onClick={() => dispatch({ type: 'OPEN_CONFIRM', payload: { id: user.id, email: user.email } })}
+              color="error"
+            >
+              <DeleteIcon />
+            </IconButton>
+          </ListItem>
+        ))}
+      </List>
 
-  {/* Confirm Dialog */}
-  <Dialog open={state.confirmOpen} onClose={() => dispatch({ type: 'CLOSE_CONFIRM' })}>
-    <DialogTitle>Confirm Deletion</DialogTitle>
-    <DialogContent>
-      <DialogContentText>
-        Are you sure you want to delete user <strong>{state.selectedUserEmail}</strong>? This action cannot be undone.
-      </DialogContentText>
-    </DialogContent>
-    <DialogActions>
-      <Button onClick={() => dispatch({ type: 'CLOSE_CONFIRM' })}>Cancel</Button>
-      <Button onClick={handleConfirmDelete} color="error" variant="contained">
-        Delete
-      </Button>
-    </DialogActions>
-  </Dialog>
-</Box>
+      {/* Confirm Dialog */}
+      <Dialog open={state.confirmOpen} onClose={() => dispatch({ type: 'CLOSE_CONFIRM' })}>
+        <DialogTitle>Confirm Deletion</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete user <strong>{state.selectedUserEmail}</strong>? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => dispatch({ type: 'CLOSE_CONFIRM' })}>Cancel</Button>
+          <Button onClick={handleConfirmDelete} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
+    </AdminPageLayout>
   );
 }

@@ -15,7 +15,7 @@ type ThemeFormValues = {
   font: string;
   darkMode: boolean;
 };
-
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
 export function ThemePanel() {
   const { data: theme, saveTheme, isSaving } = useThemeSettings();
 
@@ -33,8 +33,9 @@ export function ThemePanel() {
   };
 
   return (
-    <Box sx={{ maxWidth: 500, mx: 'auto', p: 4 }}>
-      <Typography variant="h5" gutterBottom>Theme Settings</Typography>
+    <AdminPageLayout title={'Theme Settings'}>
+
+
       <form onSubmit={handleSubmit(onSubmit)}>
         <TextField
           label="Primary Color"
@@ -66,6 +67,6 @@ export function ThemePanel() {
           </Button>
         </Box>
       </form>
-    </Box>
+    </AdminPageLayout>
   );
 }

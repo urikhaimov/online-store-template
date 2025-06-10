@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Box, Typography, CircularProgress, Alert } from '@mui/material';
 import ThemeForm from '../../../context/ThemeForm';
 import { getThemeSettings, updateThemeSettings, ThemeSettings } from '../../../api/theme';
-
+import AdminPageLayout from '../../../layouts/AdminPageLayout';
 export default function AdminThemePage() {
   const storeId = localStorage.getItem('storeId') || 'store1';
   const [theme, setTheme] = useState<ThemeSettings | null>(null);
@@ -33,11 +33,8 @@ export default function AdminThemePage() {
   if (error) return <Alert severity="error">{error}</Alert>;
 
   return (
-    <Box p={3}>
-      <Typography variant="h4" gutterBottom>
-        Admin Dashboard – Theme Manager
-      </Typography>
+    <AdminPageLayout title={' Admin Dashboard – Theme Manager'}>
       {theme && <ThemeForm initialTheme={theme} onSave={handleSave} isSaving={saving} />}
-    </Box>
+    </AdminPageLayout>
   );
 }
