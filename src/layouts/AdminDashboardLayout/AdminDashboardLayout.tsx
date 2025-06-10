@@ -1,78 +1,88 @@
-import { NavLink, Outlet } from 'react-router-dom';
 import {
+  AppBar,
   Box,
-  List,
-  ListItemButton,
-  ListItemText,
-  Typography,
+  CssBaseline,
   Divider,
+  Drawer,
+  IconButton,
+  Toolbar,
+  Typography,
+  useTheme,
+  useMediaQuery,
 } from '@mui/material';
-import ThemeToggleButton from '../../components/ThemeToggleButton';
-import Footer from '../../components/Footer';
+import MenuIcon from '@mui/icons-material/Menu';
+import { useState } from 'react';
+import LeftMenu from '../../components/LeftMenu';
+import { Outlet } from 'react-router-dom';
+
+const drawerWidth = 240;
 
 export default function AdminDashboardLayout() {
-  const navItems = [
-    { label: 'Dashboard Home', to: '/admin' },
-    { label: 'Manage Categories', to: '/admin/categories' },
-    { label: 'Manage Users', to: '/admin/users' },
-    { label: 'View Logs', to: '/admin/logs' },
-    { label: 'Manage Products', to: '/admin/products' },
-    { label: 'Theme Manager', to: '/admin/theme' },
-  ];
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
 
-  const linkStyle = ({ isActive }: { isActive: boolean }) => ({
-    textDecoration: 'none',
-    color: isActive ? '#1976d2' : 'inherit',
-    backgroundColor: isActive ? '#e3f2fd' : 'transparent',
-    borderRadius: '4px',
-  });
+  const handleDrawerToggle = () => setMobileOpen(!mobileOpen);
 
   return (
-    <Box display="flex" overflow="hidden">
-      {/* Sidebar */}
-      <Box
-        component="aside"
-        sx={{
-          width: 240,
-          minWidth: 240,
-          borderRight: '1px solid #ddd',
-          bgcolor: 'background.paper',
-          p: 2,
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-        }}
-      >
-        <Box>
-          <Typography variant="h6" gutterBottom>
-            Admin Panel
+    <Box sx={{ display: 'flex' }}>
+      <CssBaseline />
+
+      {/* AppBar at the top */}
+      <AppBar position="fixed" sx={{ zIndex: theme.zIndex.drawer + 1 }}>
+        <Toolbar>
+          {isMobile && (
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={handleDrawerToggle}
+              sx={{ mr: 2 }}
+            >
+              <MenuIcon />
+            </IconButton>
+          )}
+          <Typography variant="h6" noWrap>
+            My Online Store
           </Typography>
+        </Toolbar>
+      </AppBar>
 
-      
-
-          <Divider sx={{ mb: 2 }} />
-          <List disablePadding>
-            {navItems.map(({ label, to }) => (
-              <NavLink key={to} to={to} style={linkStyle}>
-                <ListItemButton>
-                  <ListItemText primary={label} />
-                </ListItemButton>
-              </NavLink>
-            ))}
-          </List>
-        </Box>
-
-        
+      {/* Drawer: mobile (temporary) and desktop (permanent) */}
+      <Box
+        component="nav"
+        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        aria-label="admin menu"
+      >
+        <Drawer
+          variant={isMobile ? 'temporary' : 'permanent'}
+          open={isMobile ? mobileOpen : true}
+          onClose={handleDrawerToggle}
+          ModalProps={{ keepMounted: true }}
+          sx={{
+            '& .MuiDrawer-paper': {
+              width: drawerWidth,
+              boxSizing: 'border-box',
+            },
+          }}
+        >
+          <Toolbar /> {/* For spacing below AppBar */}
+          <Divider />
+          <LeftMenu onItemClick={isMobile ? handleDrawerToggle : undefined} />
+        </Drawer>
       </Box>
 
-      {/* Main content and footer */}
-      
-        <Box sx={{ flexGrow: 1, overflowY: 'auto', p: 3 }}>
-          <Outlet />
-        </Box>
-
-       
-    
+      {/* Main Content */}
+      <Box
+        component="main"
+        sx={{
+          flexGrow: 1,
+          p: 3,
+          width: { sm: `calc(100% - ${drawerWidth}px)` },
+        }}
+      >
+        <Toolbar /> {/* Push content below AppBar */}
+        <Outlet />
+      </Box>
     </Box>
   );
 }
