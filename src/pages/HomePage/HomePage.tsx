@@ -23,7 +23,7 @@ import { useCartStore } from '../../store/cartStore';
 import { Link as RouterLink } from 'react-router-dom';
 import type { Product } from '../../types/firebase';
 import type { Category } from '../../types/firebase';
-import {localReducer,initialFilterState, VirtualRow   } from './LocalReducer'
+import {localReducer,initialFilterState, VirtualRow   } from './'
 
 
 export default function HomePage() {
