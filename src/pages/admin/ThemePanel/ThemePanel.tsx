@@ -1,10 +1,12 @@
 import {
+  Card,
+  CardContent,
+  CardHeader,
   Box,
   Button,
-  Typography,
-  TextField,
-  Switch,
   FormControlLabel,
+  Switch,
+  TextField,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useThemeSettings } from './useThemeSettings';
@@ -35,38 +37,44 @@ export function ThemePanel() {
   return (
     <AdminPageLayout title={'Theme Settings'}>
 
-
-      <form onSubmit={handleSubmit(onSubmit)}>
-        <TextField
-          label="Primary Color"
-          type="color"
-          fullWidth
-          margin="normal"
-          {...register('primaryColor')}
-        />
-        <TextField
-          label="Secondary Color"
-          type="color"
-          fullWidth
-          margin="normal"
-          {...register('secondaryColor')}
-        />
-        <TextField
-          label="Font"
-          fullWidth
-          margin="normal"
-          {...register('font')}
-        />
-        <FormControlLabel
-          control={<Switch {...register('darkMode')} />}
-          label="Dark Mode"
-        />
-        <Box mt={2}>
-          <Button type="submit" variant="contained" disabled={isSaving}>
-            Save Theme
-          </Button>
-        </Box>
-      </form>
-    </AdminPageLayout>
+      <Box p={3}>
+        <Card>
+          <CardHeader title="Admin Dashboard – Theme Manager" />
+          <CardContent>
+            <form onSubmit={handleSubmit(onSubmit)}>
+              <TextField
+                label="Primary Color"
+                type="color"
+                fullWidth
+                margin="normal"
+                {...register('primaryColor')}
+              />
+              <TextField
+                label="Secondary Color"
+                type="color"
+                fullWidth
+                margin="normal"
+                {...register('secondaryColor')}
+              />
+              <TextField
+                label="Font"
+                fullWidth
+                margin="normal"
+                {...register('font')}
+              />
+              <FormControlLabel
+                control={<Switch {...register('darkMode')} />}
+                label="Dark Mode"
+              />
+              <Box mt={2}>
+                <Button type="submit" variant="contained" disabled={isSaving}>
+                  Save Theme
+                </Button>
+              </Box>
+            </form>
+          </CardContent>
+        </Card>
+      </Box>
+    </AdminPageLayout >
   );
 }

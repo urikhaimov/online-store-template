@@ -10,9 +10,18 @@ export interface ThemeSettings {
 
 export async function getThemeSettings(storeId: string): Promise<ThemeSettings> {
   const snap = await getDoc(doc(db, 'stores', storeId));
-  if (!snap.exists()) throw new Error('Store theme not found');
+  if (!snap.exists()) {
+    console.warn('Store theme not found, falling back to defaults');
+    return {
+      mode: 'light',
+      primaryColor: '#1976d2',
+      secondaryColor: '#dc004e',
+      fontFamily: 'Roboto',
+    };
+  }
   return snap.data().theme as ThemeSettings;
 }
+
 
 export async function updateThemeSettings(storeId: string, theme: ThemeSettings) {
   await setDoc(doc(db, 'stores', storeId), { theme }, { merge: true });
