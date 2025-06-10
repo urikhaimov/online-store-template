@@ -1,5 +1,5 @@
 // src/api/products.ts
-import { db, storage } from './firebase';
+import { db, storage } from '../firebase';
 import {
   collection,
   addDoc,
@@ -18,7 +18,7 @@ import {
   listAll, deleteObject
 } from 'firebase/storage';
 import type { Product } from '../types/firebase';
-import { app } from '../api/firebase';
+
 import { query, where } from 'firebase/firestore';
 import { uploadFilesAndReturnUrls } from '../utils/uploadFilesAndReturnUrls';
 

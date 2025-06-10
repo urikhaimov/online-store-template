@@ -7,7 +7,7 @@ import {
   updateDoc,
   doc,
 } from 'firebase/firestore';
-import { firebaseConfig } from '../../src/shared/firebaseConfig.js'; // Make sure this is an ES module
+import { firebaseConfig } from '../../src/shared/firebaseConfig'; // Make sure this is an ES module
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);

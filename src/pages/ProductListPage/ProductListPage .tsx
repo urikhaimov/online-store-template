@@ -12,7 +12,7 @@ import {
   Box
 } from '@mui/material';
 import { collection, getDocs } from 'firebase/firestore';
-import { db } from '../../api/firebase';
+import { db } from '../../firebase';
 import { createProduct, updateProduct, deleteProduct } from '../../api/products';
 
 type Product = {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../../../api/firebase';
+import { db } from '../../../firebase';
 
 const docRef = doc(db, 'themes', 'settings');
 

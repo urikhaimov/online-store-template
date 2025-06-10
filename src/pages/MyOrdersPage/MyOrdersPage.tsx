@@ -15,7 +15,7 @@ import {
   deleteDoc,
   doc,
 } from 'firebase/firestore';
-import { db } from '../../api/firebase';
+import { db } from '../../firebase';
 import { useCartStore } from '../../store/cartStore';
 import { toast } from 'react-toastify';
 import { useSafeAuth } from '../../hooks/getSafeAuth';

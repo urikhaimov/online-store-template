@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { db } from '../api/firebase.js';
+import { db } from '../firebase.js';
 import { collection, addDoc, updateDoc, doc } from 'firebase/firestore';
 import { TextField, Button, Box } from '@mui/material';
 
