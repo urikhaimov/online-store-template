@@ -8,7 +8,7 @@ type Props = {
 
 export default function AdminPageLayout({ title, children }: Props) {
   return (
-    <Box p={3}>
+    <Box px={2} py={3} sx={{ width: '80vw', mx: 'auto' }}>
       <Typography variant="h4" gutterBottom>
         {title}
       </Typography>

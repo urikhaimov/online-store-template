@@ -159,49 +159,59 @@ export default function AdminProductsPage() {
           />
         </Grid>
       </Grid>
+      <Box
+        component="section"
+        sx={{
+          flexGrow: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: 2,
+          py: 3,
+         height: `50vh`,
+        }}
+      >
+        {Object.entries(groupedProducts).map(([category, items]) => (
+          <Box key={category} mb={4}>
+            <Divider sx={{ mb: 2 }} textAlign="left">
+              <Typography variant="h6">{category}</Typography>
+            </Divider>
+            {items.map((product) => (
+              <motion.div
+                key={product.id}
+                initial={{ opacity: 0, translateY: 20 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Card sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1 }}>
+                  <CardMedia
+                    component="img"
+                    sx={{ width: 80, height: 80, borderRadius: 1, objectFit: 'cover' }}
+                    image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
+                    alt={product.name}
+                  />
+                  <CardContent sx={{ flex: 1 }}>
+                    <Typography variant="subtitle1" fontWeight="bold">
+                      {product.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      ${product.price.toFixed(2)} • Stock: {product.stock}
+                    </Typography>
+                  </CardContent>
+                  <CardActions>
+                    <IconButton onClick={() => navigate(`/admin/products/edit/${product.id}`)}>
+                      <EditIcon />
+                    </IconButton>
+                    <IconButton color="error" onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}>
 
-      {Object.entries(groupedProducts).map(([category, items]) => (
-        <Box key={category} mb={4}>
-          <Divider sx={{ mb: 2 }} textAlign="left">
-            <Typography variant="h6">{category}</Typography>
-          </Divider>
-          {items.map((product) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, translateY: 20 }}
-              animate={{ opacity: 1, translateY: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              <Card sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1 }}>
-                <CardMedia
-                  component="img"
-                  sx={{ width: 80, height: 80, borderRadius: 1, objectFit: 'cover' }}
-                  image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
-                  alt={product.name}
-                />
-                <CardContent sx={{ flex: 1 }}>
-                  <Typography variant="subtitle1" fontWeight="bold">
-                    {product.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    ${product.price.toFixed(2)} • Stock: {product.stock}
-                  </Typography>
-                </CardContent>
-                <CardActions>
-                  <IconButton onClick={() => navigate(`/admin/products/edit/${product.id}`)}>
-                    <EditIcon />
-                  </IconButton>
-                  <IconButton color="error" onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}>
-
-                    <DeleteIcon />
-                  </IconButton>
-                </CardActions>
-              </Card>
-            </motion.div>
-          ))}
-        </Box>
-      ))}
-
+                      <DeleteIcon />
+                    </IconButton>
+                  </CardActions>
+                </Card>
+              </motion.div>
+            ))}
+          </Box>
+        ))}
+      </Box>
       {hasMore && (
         <Box ref={ref} display="flex" justifyContent="center" py={3}>
           {loading && <CircularProgress size={24} />}
