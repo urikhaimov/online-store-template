@@ -1,77 +1,96 @@
-import React, { useMemo, useReducer } from 'react';
+import React, { useEffect, useMemo, useReducer } from 'react';
 import {
   Box,
   Typography,
   Card,
   CardContent,
   CardMedia,
+  CardActions,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
+  IconButton,
+  CircularProgress,
   Snackbar,
   Alert,
-  IconButton,
   TextField,
   MenuItem,
   Select,
   InputLabel,
   FormControl,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Grid,
+  Divider,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
-import { useAllProducts } from '../../../hooks/useProducts';
-import { useProductMutations } from '../../../hooks/useProductMutations';
-import { useAllCategories, Category } from '../../../hooks/useAllCategories';
+import { useInView } from 'react-intersection-observer';
+import { motion } from 'framer-motion';
+import { fetchProductsPage } from '../../../hooks/fetchProductsPage';
 import AdminPageLayout from '../../../layouts/AdminPageLayout';
-import { initialState, reducer } from './LocalReducer';
 import { Product } from '../../../types/firebase';
-import dayjs from 'dayjs';
-import { Timestamp } from 'firebase/firestore';
+import { initialState, reducer, State } from './LocalReducer';
+import { useAllCategories, Category } from '../../../hooks/useAllCategories';
 
 export default function AdminProductsPage() {
-  const { data: products = [] } = useAllProducts();
-  const { remove } = useProductMutations();
-  const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [products, setProducts] = useReducer(
+    (prev: Product[], next: Product[] | ((prev: Product[]) => Product[])) =>
+      typeof next === 'function' ? next(prev) : [...prev, ...next],
+    []
+  );
+  const [lastDoc, setLastDoc] = useReducer((_prev: any, next: any) => next, null);
+  const [loading, setLoading] = useReducer((_prev: boolean, next: boolean) => next, false);
+  const [hasMore, setHasMore] = useReducer((_prev: boolean, next: boolean) => next, true);
+
   const { data: categories = [] } = useAllCategories() as { data: Category[] };
+  const navigate = useNavigate();
+  const { ref, inView } = useInView({ threshold: 1 });
 
-  const handleDeleteClick = (productId: string) => {
-    dispatch({ type: 'OPEN_DELETE_DIALOG', payload: productId });
+  const loadNextPage = async () => {
+    if (loading || !hasMore) return;
+    setLoading(true);
+    const { products: next, lastVisible } = await fetchProductsPage(lastDoc);
+    setProducts((prev) => [...prev, ...next]);
+    setLastDoc(lastVisible);
+    setHasMore(!!lastVisible);
+    setLoading(false);
   };
 
-  const confirmDelete = async () => {
-    if (state.selectedProductId) {
-      await remove.mutateAsync(state.selectedProductId);
-      dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: 'Product deleted successfully' });
+  useEffect(() => {
+    loadNextPage();
+  }, []);
+
+  useEffect(() => {
+    if (inView) {
+      loadNextPage();
     }
-    dispatch({ type: 'CLOSE_DELETE_DIALOG' });
-  };
+  }, [inView]);
 
-  const handleEditClick = (productId: string) => {
-    navigate(`/admin/products/edit/${productId}`);
+  const handleDelete = async (productId: string) => {
+    setProducts((prev) => prev.filter((p) => p.id !== productId));
+    dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: 'Product deleted successfully' });
+
+    // ✅ Close the dialog
+    dispatch({ type: 'CLOSE_DELETE_DIALOG' });
   };
 
   const filteredProducts = useMemo(() => {
     const term = state.searchTerm.toLowerCase();
-
     return products.filter((p) => {
       const matchesText =
         p.name.toLowerCase().includes(term) ||
         p.description?.toLowerCase().includes(term);
-
       const matchesCategory =
         !state.selectedCategoryId || p.categoryId === state.selectedCategoryId;
-
       const matchesDate =
         !state.createdAfter ||
-        (p.createdAt instanceof Timestamp &&
-       p.createdAt.toDate().getTime() >= state.createdAfter.valueOf())
-
+        (p.createdAt?.toDate?.() &&
+          p.createdAt.toDate().getTime() >= state.createdAfter.valueOf());
       return matchesText && matchesCategory && matchesDate;
     });
   }, [products, state]);
@@ -79,13 +98,11 @@ export default function AdminProductsPage() {
   const groupedProducts = useMemo(() => {
     const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
     const acc: Record<string, Product[]> = {};
-
     for (const product of filteredProducts) {
       const categoryName = categoryMap.get(product.categoryId) || 'Uncategorized';
       if (!acc[categoryName]) acc[categoryName] = [];
       acc[categoryName].push(product);
     }
-
     return acc;
   }, [filteredProducts, categories]);
 
@@ -99,75 +116,105 @@ export default function AdminProductsPage() {
         Add Product
       </Button>
 
-      <TextField
-        fullWidth
-        label="Search products"
-        variant="outlined"
-        value={state.searchTerm}
-        onChange={(e) =>
-          dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })
-        }
-        sx={{ mb: 2 }}
-      />
-
-      <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel id="category-filter-label">Filter by Category</InputLabel>
-        <Select
-          labelId="category-filter-label"
-          value={state.selectedCategoryId}
-          label="Filter by Category"
-          onChange={(e) =>
-            dispatch({ type: 'SET_CATEGORY_FILTER', payload: e.target.value })
-          }
-        >
-          <MenuItem value="">All Categories</MenuItem>
-          {categories.map((cat) => (
-            <MenuItem key={cat.id} value={cat.id}>
-              {cat.name}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <DatePicker
-        label="Created After"
-        value={state.createdAfter}
-        onChange={(newDate) =>
-          dispatch({ type: 'SET_CREATED_AFTER', payload: newDate })
-        }
-        slotProps={{ textField: { fullWidth: true, sx: { mb: 3 } } }}
-      />
+      <Grid container spacing={2} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={4}>
+          <TextField
+            fullWidth
+            label="Search products"
+            variant="outlined"
+            value={state.searchTerm}
+            onChange={(e) =>
+              dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })
+            }
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <FormControl fullWidth>
+            <InputLabel id="category-filter-label">Category</InputLabel>
+            <Select
+              labelId="category-filter-label"
+              value={state.selectedCategoryId}
+              label="Category"
+              onChange={(e) =>
+                dispatch({ type: 'SET_CATEGORY_FILTER', payload: e.target.value })
+              }
+            >
+              <MenuItem value="">All</MenuItem>
+              {categories.map((cat) => (
+                <MenuItem key={cat.id} value={cat.id}>
+                  {cat.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} md={4}>
+          <DatePicker
+            label="Created After"
+            value={state.createdAfter}
+            onChange={(newDate) =>
+              dispatch({ type: 'SET_CREATED_AFTER', payload: newDate })
+            }
+            slotProps={{ textField: { fullWidth: true } }}
+          />
+        </Grid>
+      </Grid>
 
       {Object.entries(groupedProducts).map(([category, items]) => (
         <Box key={category} mb={4}>
-          <Typography variant="h6" gutterBottom>
-            {category}
-          </Typography>
+          <Divider sx={{ mb: 2 }} textAlign="left">
+            <Typography variant="h6">{category}</Typography>
+          </Divider>
           {items.map((product) => (
-            <Card key={product.id} sx={{ display: 'flex', mb: 2, alignItems: 'center' }}>
-              <CardMedia
-                component="img"
-                sx={{ width: 100, height: 100 }}
-                image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
-                alt={product.name}
-              />
-              <CardContent sx={{ flex: 1 }}>
-                <Typography variant="h6">{product.name}</Typography>
-                <Typography variant="body2">${product.price.toFixed(2)}</Typography>
-                <Typography variant="caption">Stock: {product.stock}</Typography>
-              </CardContent>
-              <Box pr={2}>
-                <IconButton onClick={() => handleEditClick(product.id)}>
-                  <EditIcon />
-                </IconButton>
-                <IconButton color="error" onClick={() => handleDeleteClick(product.id)}>
-                  <DeleteIcon />
-                </IconButton>
-              </Box>
-            </Card>
+            <motion.div
+              key={product.id}
+              initial={{ opacity: 0, translateY: 20 }}
+              animate={{ opacity: 1, translateY: 0 }}
+              transition={{ duration: 0.3 }}
+            >
+              <Card sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1 }}>
+                <CardMedia
+                  component="img"
+                  sx={{ width: 80, height: 80, borderRadius: 1, objectFit: 'cover' }}
+                  image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
+                  alt={product.name}
+                />
+                <CardContent sx={{ flex: 1 }}>
+                  <Typography variant="subtitle1" fontWeight="bold">
+                    {product.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    ${product.price.toFixed(2)} • Stock: {product.stock}
+                  </Typography>
+                </CardContent>
+                <CardActions>
+                  <IconButton onClick={() => navigate(`/admin/products/edit/${product.id}`)}>
+                    <EditIcon />
+                  </IconButton>
+                  <IconButton color="error" onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}>
+
+                    <DeleteIcon />
+                  </IconButton>
+                </CardActions>
+              </Card>
+            </motion.div>
           ))}
         </Box>
       ))}
+
+      {hasMore && (
+        <Box ref={ref} display="flex" justifyContent="center" py={3}>
+          {loading && <CircularProgress size={24} />}
+        </Box>
+      )}
+
+      {!hasMore && filteredProducts.length > 0 && (
+        <Box textAlign="center" py={2}>
+          <Typography variant="caption" color="text.secondary">
+            No more products to load.
+          </Typography>
+        </Box>
+      )}
 
       {filteredProducts.length === 0 && (
         <Typography variant="body2" color="text.secondary">
@@ -184,7 +231,11 @@ export default function AdminProductsPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => dispatch({ type: 'CLOSE_DELETE_DIALOG' })}>Cancel</Button>
-          <Button onClick={confirmDelete} color="error" variant="contained">
+          <Button
+            onClick={() => handleDelete(state.selectedProductId!)}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>

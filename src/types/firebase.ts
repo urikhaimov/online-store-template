@@ -6,14 +6,14 @@ export type Category = {
 };
 
 export type Product = {
-id: string;
+  id: string;
+   description?: string;
   name: string;
-  description?: string;
   price: number;
   stock: number;
-  imageUrls: string[];
-  categoryId: string;
-  createdAt?: Timestamp; // ✅ must be Timestamp (from Firestore)
+  imageUrls?: string[];
+  createdAt?: any; // Firestore Timestamp if needed
+  categoryId: string; // ✅ ADD THIS
 };
 
 export type NewProduct = Omit<Product, 'id' | 'imageUrls'> & {
