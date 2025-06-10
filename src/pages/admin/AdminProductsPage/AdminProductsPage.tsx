@@ -15,16 +15,23 @@ import {
   Alert,
   IconButton,
   TextField,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
 } from '@mui/material';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
 import { useAllProducts } from '../../../hooks/useProducts';
 import { useProductMutations } from '../../../hooks/useProductMutations';
+import { useAllCategories, Category } from '../../../hooks/useAllCategories';
 import AdminPageLayout from '../../../layouts/AdminPageLayout';
 import { initialState, reducer } from './LocalReducer';
-import { useAllCategories } from '../../../hooks/useAllCategories';
-import { Category } from '../../../hooks/useAllCategories';
+import { Product } from '../../../types/firebase';
+import dayjs from 'dayjs';
+import { Timestamp } from 'firebase/firestore';
 
 export default function AdminProductsPage() {
   const { data: products = [] } = useAllProducts();
@@ -32,6 +39,7 @@ export default function AdminProductsPage() {
   const navigate = useNavigate();
   const [state, dispatch] = useReducer(reducer, initialState);
   const { data: categories = [] } = useAllCategories() as { data: Category[] };
+
   const handleDeleteClick = (productId: string) => {
     dispatch({ type: 'OPEN_DELETE_DIALOG', payload: productId });
   };
@@ -50,18 +58,27 @@ export default function AdminProductsPage() {
 
   const filteredProducts = useMemo(() => {
     const term = state.searchTerm.toLowerCase();
-    return products.filter(
-      (p) =>
-        p.name.toLowerCase().includes(term) ||
-        p.description?.toLowerCase().includes(term)
-    );
-  }, [products, state.searchTerm]);
 
+    return products.filter((p) => {
+      const matchesText =
+        p.name.toLowerCase().includes(term) ||
+        p.description?.toLowerCase().includes(term);
+
+      const matchesCategory =
+        !state.selectedCategoryId || p.categoryId === state.selectedCategoryId;
+
+      const matchesDate =
+        !state.createdAfter ||
+        (p.createdAt instanceof Timestamp &&
+       p.createdAt.toDate().getTime() >= state.createdAfter.valueOf())
+
+      return matchesText && matchesCategory && matchesDate;
+    });
+  }, [products, state]);
 
   const groupedProducts = useMemo(() => {
     const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
-
-    const acc: Record<string, typeof products> = {};
+    const acc: Record<string, Product[]> = {};
 
     for (const product of filteredProducts) {
       const categoryName = categoryMap.get(product.categoryId) || 'Uncategorized';
@@ -90,7 +107,35 @@ export default function AdminProductsPage() {
         onChange={(e) =>
           dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })
         }
-        sx={{ mb: 3 }}
+        sx={{ mb: 2 }}
+      />
+
+      <FormControl fullWidth sx={{ mb: 2 }}>
+        <InputLabel id="category-filter-label">Filter by Category</InputLabel>
+        <Select
+          labelId="category-filter-label"
+          value={state.selectedCategoryId}
+          label="Filter by Category"
+          onChange={(e) =>
+            dispatch({ type: 'SET_CATEGORY_FILTER', payload: e.target.value })
+          }
+        >
+          <MenuItem value="">All Categories</MenuItem>
+          {categories.map((cat) => (
+            <MenuItem key={cat.id} value={cat.id}>
+              {cat.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      <DatePicker
+        label="Created After"
+        value={state.createdAfter}
+        onChange={(newDate) =>
+          dispatch({ type: 'SET_CREATED_AFTER', payload: newDate })
+        }
+        slotProps={{ textField: { fullWidth: true, sx: { mb: 3 } } }}
       />
 
       {Object.entries(groupedProducts).map(([category, items]) => (
@@ -126,7 +171,7 @@ export default function AdminProductsPage() {
 
       {filteredProducts.length === 0 && (
         <Typography variant="body2" color="text.secondary">
-          No products match your search.
+          No products match your filters.
         </Typography>
       )}
 

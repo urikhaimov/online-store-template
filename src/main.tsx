@@ -11,7 +11,8 @@ import { loadStoreConfig } from './utils/loadStoreConfig';
 import { RedirectProvider } from './context/RedirectContext';
 import { AuthProvider } from './context/AuthContext';
 import { useStoreSettings } from './stores/useStoreSettings';
-
+import { LocalizationProvider } from '@mui/x-date-pickers';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import './index.css';
 
 const storeId = localStorage.getItem('storeId') || 'store1'; // fallback to useStoreSettings not possible in module scope
@@ -26,7 +27,9 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
             <AuthProvider>
               <QueryClientProvider client={queryClient}>
                 <RedirectProvider>
-                  <App />
+                  <LocalizationProvider dateAdapter={AdapterDayjs}>
+                    <App />
+                  </LocalizationProvider>
                 </RedirectProvider>
               </QueryClientProvider>
             </AuthProvider>

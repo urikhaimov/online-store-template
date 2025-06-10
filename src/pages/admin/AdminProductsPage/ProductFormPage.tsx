@@ -81,7 +81,7 @@ export default function ProductFormPage({ mode }: Props) {
               imageUrls: prod.imageUrls || [],
             };
             Object.entries(defaults).forEach(([key, val]) =>
-              setValue(key as keyof FormState, val)
+              setValue(key as keyof FormState, val ?? '')
             );
             setPreviewUrls(prod.imageUrls || []);
           } else {
