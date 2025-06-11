@@ -1,9 +1,9 @@
 import { Dayjs } from 'dayjs';
-import {Category, Product} from '../../../types/firebase' 
+import { Category, Product } from '../../../types/firebase'
 
 
 
- interface State {
+interface State {
     deleteDialogOpen: boolean;
     selectedProductId: string | null;
     successMessage: string;
@@ -14,17 +14,19 @@ import {Category, Product} from '../../../types/firebase'
     pageSize: number;
 }
 
- type Action =
+type Action =
     | { type: 'OPEN_DELETE_DIALOG'; payload: string }
     | { type: 'CLOSE_DELETE_DIALOG' }
     | { type: 'SET_SUCCESS_MESSAGE'; payload: string }
     | { type: 'CLEAR_SUCCESS_MESSAGE' }
     | { type: 'SET_SEARCH_TERM'; payload: string }
     | { type: 'SET_CATEGORY_FILTER'; payload: string }
+    | { type: 'RESET_FILTERS' }
     | { type: 'SET_CREATED_AFTER'; payload: Dayjs | null } // ✅ fixed here
     | { type: 'INCREMENT_PAGE'; payload: number }; // ✅ fixed here
 
- const initialState: State = {
+
+const initialState: State = {
     deleteDialogOpen: false,
     selectedProductId: null,
     successMessage: '',
@@ -35,9 +37,9 @@ import {Category, Product} from '../../../types/firebase'
     pageSize: 10,
 };
 
-export type VirtualRow = 
-  | { type: 'category'; data: Category }
-  | { type: 'product'; data: Product };
+export type VirtualRow =
+    | { type: 'category'; data: Category }
+    | { type: 'product'; data: Product };
 
 function reducer(state: State, action: Action): State {
     switch (action.type) {
@@ -57,6 +59,14 @@ function reducer(state: State, action: Action): State {
             return { ...state, createdAfter: action.payload };
         case 'INCREMENT_PAGE':
             return { ...state, page: state.page + 1 };
+        case 'RESET_FILTERS':
+            return {
+                ...state,
+                searchTerm: '',
+                selectedCategoryId: '',
+                createdAfter: null,
+                page: 1,
+            };
         default:
             return state;
     }

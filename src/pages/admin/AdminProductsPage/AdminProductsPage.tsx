@@ -33,7 +33,7 @@ import { motion } from 'framer-motion';
 import { fetchProductsPage } from '../../../hooks/fetchProductsPage';
 import AdminPageLayout from '../../../layouts/AdminPageLayout';
 import { Product } from '../../../types/firebase';
-import { initialState, reducer, State } from './LocalReducer';
+import { initialState, reducer } from './LocalReducer';
 import { useAllCategories, Category } from '../../../hooks/useAllCategories';
 
 export default function AdminProductsPage() {
@@ -54,7 +54,12 @@ export default function AdminProductsPage() {
   const loadNextPage = async () => {
     if (loading || !hasMore) return;
     setLoading(true);
-    const { products: next, lastVisible } = await fetchProductsPage(lastDoc);
+
+    const { products: next, lastVisible } = await fetchProductsPage(lastDoc, {
+      categoryId: state.selectedCategoryId,
+      createdAfter: state.createdAfter?.toDate?.(),
+    });
+
     setProducts((prev) => [...prev, ...next]);
     setLastDoc(lastVisible);
     setHasMore(!!lastVisible);
@@ -62,8 +67,12 @@ export default function AdminProductsPage() {
   };
 
   useEffect(() => {
+    // Reset and reload when filters change
+    setProducts([]);
+    setLastDoc(null);
+    setHasMore(true);
     loadNextPage();
-  }, []);
+  }, [state.selectedCategoryId, state.createdAfter]);
 
   useEffect(() => {
     if (inView) {
@@ -74,12 +83,11 @@ export default function AdminProductsPage() {
   const handleDelete = async (productId: string) => {
     setProducts((prev) => prev.filter((p) => p.id !== productId));
     dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: 'Product deleted successfully' });
-
-    // ✅ Close the dialog
     dispatch({ type: 'CLOSE_DELETE_DIALOG' });
   };
 
-  const filteredProducts = useMemo(() => {
+
+const filteredProducts = useMemo(() => {
     const term = state.searchTerm.toLowerCase();
     return products.filter((p) => {
       const matchesText =
@@ -93,7 +101,7 @@ export default function AdminProductsPage() {
           p.createdAt.toDate().getTime() >= state.createdAfter.valueOf());
       return matchesText && matchesCategory && matchesDate;
     });
-  }, [products, state]);
+  }, [products, state.searchTerm]);
 
   const groupedProducts = useMemo(() => {
     const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
@@ -158,18 +166,18 @@ export default function AdminProductsPage() {
             slotProps={{ textField: { fullWidth: true } }}
           />
         </Grid>
+        <Grid item xs={12} md={12} textAlign="right">
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => dispatch({ type: 'RESET_FILTERS' })}
+          >
+            Clear Filters
+          </Button>
+        </Grid>
       </Grid>
-      <Box
-        component="section"
-        sx={{
-          flexGrow: 1,
-          minHeight: 0,
-          overflowY: 'auto',
-          px: 2,
-          py: 3,
-         height: `50vh`,
-        }}
-      >
+
+      <Box component="section" sx={{ py: 3, height: `50vh`, overflowY: 'auto' }}>
         {Object.entries(groupedProducts).map(([category, items]) => (
           <Box key={category} mb={4}>
             <Divider sx={{ mb: 2 }} textAlign="left">
@@ -201,8 +209,10 @@ export default function AdminProductsPage() {
                     <IconButton onClick={() => navigate(`/admin/products/edit/${product.id}`)}>
                       <EditIcon />
                     </IconButton>
-                    <IconButton color="error" onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}>
-
+                    <IconButton
+                      color="error"
+                      onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}
+                    >
                       <DeleteIcon />
                     </IconButton>
                   </CardActions>
@@ -212,6 +222,7 @@ export default function AdminProductsPage() {
           </Box>
         ))}
       </Box>
+
       {hasMore && (
         <Box ref={ref} display="flex" justifyContent="center" py={3}>
           {loading && <CircularProgress size={24} />}
