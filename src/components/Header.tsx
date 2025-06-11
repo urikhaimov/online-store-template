@@ -11,6 +11,9 @@ import Navbar from './Navbar';
 import { useSafeAuth } from '../hooks/useAuth';
 import  {StoreSwitcher}  from './StoreSwitcher';
 import { useStoreSettings } from '../stores/useStoreSettings';
+import { useCartStore } from '../stores/useCartStore';
+
+
 
 const Header: React.FC = () => {
   const { user } = useSafeAuth();
@@ -18,6 +21,16 @@ const Header: React.FC = () => {
 
   const { storeId, setStoreId } = useStoreSettings();
   const [showToast, setShowToast] = useState(false);
+
+  const items = useCartStore((s) => s.items);
+  const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+
+  console.log('items in Header', items)
+  console.log('itemCount in Header', itemCount)
+
+
+
+
 
   const handleStoreChange = (newId: string) => {
     setStoreId(newId);
