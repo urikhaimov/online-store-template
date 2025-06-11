@@ -29,7 +29,8 @@ export type Action =
   | { type: 'DECREMENT_PAGE' }
   | { type: 'SET_SUCCESS_MESSAGE'; payload: string }
   | { type: 'CLEAR_SUCCESS_MESSAGE' }
-  | { type: 'SET_PENDING_DELETE'; payload: Product | null };
+  | { type: 'SET_PENDING_DELETE'; payload: Product | null }
+  | { type: 'RESET_PAGINATION'; payload: State };
 
 export const initialState: State = {
   products: [],
@@ -43,6 +44,17 @@ export const initialState: State = {
   successMessage: '',
   pendingDelete: null,
 };
+
+export function resetPagination(state: State): State {
+  return {
+    ...state,
+    page: 1,
+    products: [],
+    lastDoc: null,
+    hasMore: true,
+    loading: false,
+  };
+}
 
 export function reducer(state: State, action: Action): State {
   switch (action.type) {
@@ -66,11 +78,12 @@ export function reducer(state: State, action: Action): State {
       return { ...state, createdAfter: action.payload, page: 1 };
     case 'RESET_FILTERS':
       return {
-        ...state,
+        ...resetPagination(state),
         searchTerm: '',
         selectedCategoryId: '',
         createdAfter: null,
-        page: 1,
+        successMessage: '',
+        pendingDelete: null,
       };
     case 'INCREMENT_PAGE':
       return { ...state, page: state.page + 1 };
@@ -82,7 +95,11 @@ export function reducer(state: State, action: Action): State {
       return { ...state, successMessage: '' };
     case 'SET_PENDING_DELETE':
       return { ...state, pendingDelete: action.payload };
+    case 'RESET_PAGINATION':
+      return { ...action.payload };
     default:
       return state;
   }
 }
+
+
