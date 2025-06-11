@@ -14,6 +14,7 @@ export type Product = {
   imageUrls?: string[];
   createdAt?: any; // Firestore Timestamp if needed
   categoryId: string; // ✅ ADD THIS
+   images?: string[]; // ✅ add this
 };
 
 export type NewProduct = Omit<Product, 'id' | 'imageUrls'> & {
