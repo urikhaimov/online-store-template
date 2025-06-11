@@ -1,5 +1,5 @@
 // src/pages/HomePage/ProductList.tsx
-import React, {  useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -33,10 +33,11 @@ export default function ProductList({ products, page, hasMore, setPage, categori
     acc[name].push(p);
     return acc;
   }, {});
-  
+
+
   useEffect(() => {
-    console.log(products); // Check image array on each product
-  }, [products]);
+    console.log('Cart Items:', cart.items);
+  }, [cart.items]);
 
 
 
@@ -83,16 +84,27 @@ export default function ProductList({ products, page, hasMore, setPage, categori
                 </CardContent>
                 <Button
                   variant="contained"
-                  onClick={() => cart.addToCart({ ...p, quantity: 1 })}
+                  onClick={() =>
+                    cart.addToCart({
+                      id: p.id,
+                      name: p.name,
+                      price: p.price,
+                      quantity: p.quantity || 0,
+                      stock: p.stock || 100,
+                      categoryId: category, // ✅ fallback value
+                    })
+                  }
                 >
                   Add to Cart
                 </Button>
+
               </Card>
             </motion.div>
           ))}
         </Stack>
       </Box>
-    ))}
+    ))
+    }
 
     {/* Pagination */}
     <Box display="flex" justifyContent="space-between" alignItems="center" mt={4}>
@@ -115,19 +127,23 @@ export default function ProductList({ products, page, hasMore, setPage, categori
       </Button>
     </Box>
 
-    {!hasMore && products.length > 0 && (
-      <Box textAlign="center" py={2}>
-        <Typography variant="caption" color="text.secondary">
-          No more products to load.
-        </Typography>
-      </Box>
-    )}
+    {
+      !hasMore && products.length > 0 && (
+        <Box textAlign="center" py={2}>
+          <Typography variant="caption" color="text.secondary">
+            No more products to load.
+          </Typography>
+        </Box>
+      )
+    }
 
-    {products.length === 0 && (
-      <Typography variant="body2" color="text.secondary">
-        No products match your filters.
-      </Typography>
-    )}
-  </Box>
+    {
+      products.length === 0 && (
+        <Typography variant="body2" color="text.secondary">
+          No products match your filters.
+        </Typography>
+      )
+    }
+  </Box >
   );
 }

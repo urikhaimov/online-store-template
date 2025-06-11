@@ -1,3 +1,4 @@
+// src/pages/MyOrdersPage/MyOrdersPage.tsx
 import React from 'react';
 import {
   Box,
@@ -20,12 +21,14 @@ import { useCartStore } from '../../store/cartStore';
 import { toast } from 'react-toastify';
 import { useSafeAuth } from '../../hooks/getSafeAuth';
 
+/* ---------- Types ---------- */
 interface OrderItem {
   id: string;
   name: string;
   price: number;
   quantity: number;
   stock: number;
+  categoryId: string;
 }
 
 interface Order {
@@ -36,6 +39,7 @@ interface Order {
   userId: string;
 }
 
+/* ---------- Firestore query ---------- */
 const fetchUserOrders = async (uid: string): Promise<Order[]> => {
   const q = query(collection(db, 'orders'), where('userId', '==', uid));
   const snapshot = await getDocs(q);
@@ -50,12 +54,18 @@ export default function MyOrdersPage() {
   const cart = useCartStore();
   const queryClient = useQueryClient();
 
-  const { data: orders, isLoading, error } = useQuery<Order[], Error>({
+  /* ---------- Load user orders ---------- */
+  const {
+    data: orders,
+    isLoading,
+    error,
+  } = useQuery<Order[], Error>({
     queryKey: ['orders', user?.id],
     queryFn: () => fetchUserOrders(user!.id),
     enabled: !!user?.id,
   });
 
+  /* ---------- Cancel order mutation ---------- */
   const cancelOrderMutation = useMutation({
     mutationFn: async (orderId: string) => {
       await deleteDoc(doc(db, 'orders', orderId));
@@ -69,6 +79,7 @@ export default function MyOrdersPage() {
     },
   });
 
+  /* ---------- Handlers ---------- */
   const handleReorder = (order: Order) => {
     if (order.items.length === 0) {
       toast.info('No items to reorder.');
@@ -82,6 +93,7 @@ export default function MyOrdersPage() {
         price: item.price,
         quantity: item.quantity,
         stock: item.stock || 100,
+        categoryId: item.categoryId || 'uncategorized',
       });
     });
 
@@ -92,25 +104,20 @@ export default function MyOrdersPage() {
     cancelOrderMutation.mutate(orderId);
   };
 
+  /* ---------- Render ---------- */
   if (!user) return <Typography>Loading user...</Typography>;
   if (isLoading) return <CircularProgress />;
   if (error) return <Typography>Error loading orders: {error.message}</Typography>;
   if (!orders || orders.length === 0) return <Typography>No orders found.</Typography>;
 
   return (
-     <Box
-         flexGrow={1}
-         display="flex"
-         justifyContent="center"
-         alignItems="center"
-         px={2}
-         py={4}
-         sx={{
-           width: '100%', // Safe
-           maxWidth: '100vw', // Prevent overflow
-           overflowX: 'hidden', // Enforced here too
-         }}
-       >
+    <Box
+      flexGrow={1}
+      px={2}
+      py={4}
+      maxWidth="100vw"
+      overflow="hidden"
+    >
       <Typography variant="h4" gutterBottom>
         My Orders
       </Typography>
@@ -135,8 +142,8 @@ export default function MyOrdersPage() {
 
           <Button
             variant="outlined"
-            onClick={() => handleReorder(order)}
             sx={{ mr: 1 }}
+            onClick={() => handleReorder(order)}
           >
             Reorder
           </Button>
@@ -145,6 +152,7 @@ export default function MyOrdersPage() {
             variant="contained"
             color="error"
             onClick={() => handleCancel(order.id)}
+            disabled={cancelOrderMutation.isPending}
           >
             Cancel Order
           </Button>

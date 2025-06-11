@@ -1,32 +1,41 @@
-// src/store/cartStore.ts
 import { create } from 'zustand';
-import type { CartItem } from '../types/CardItem';
+import { Product } from '../types/firebase';
 
-interface CartState {
+export type CartItem = Product & { quantity: number };
+
+type CartState = {
   items: CartItem[];
   addToCart: (item: CartItem) => void;
   removeFromCart: (id: string) => void;
   clearCart: () => void;
-  getTotal: () => number;
-}
+};
 
-export const useCartStore = create<CartState>((set, get) => ({
+export const useCartStore = create<CartState>((set) => ({
   items: [],
 
-  addToCart: (item) =>
+  addToCart: (product) => {
     set((state) => {
-      const existing = state.items.find((i) => i.id === item.id);
+      const existing = state.items.find((item) => item.id === product.id);
+
       if (existing) {
         return {
-          items: state.items.map((i) =>
-            i.id === item.id
-              ? { ...i, quantity: i.quantity + item.quantity }
-              : i
+          items: state.items.map((item) =>
+            item.id === product.id
+              ? {
+                ...item,
+                quantity: item.quantity + (product.quantity || 1), // increment correctly
+              }
+              : item
           ),
         };
+      } else {
+        return {
+          items: [...state.items, { ...product, quantity: product.quantity || 1 }],
+        };
       }
-      return { items: [...state.items, item] };
-    }),
+    });
+  },
+
 
   removeFromCart: (id) =>
     set((state) => ({
@@ -34,8 +43,4 @@ export const useCartStore = create<CartState>((set, get) => ({
     })),
 
   clearCart: () => set({ items: [] }),
-
-  getTotal: () => {
-    return get().items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  },
 }));
