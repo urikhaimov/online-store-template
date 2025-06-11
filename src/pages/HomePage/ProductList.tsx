@@ -1,5 +1,5 @@
 // src/pages/HomePage/ProductList.tsx
-
+import React, {  useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -33,6 +33,13 @@ export default function ProductList({ products, page, hasMore, setPage, categori
     acc[name].push(p);
     return acc;
   }, {});
+  
+  useEffect(() => {
+    console.log(products); // Check image array on each product
+  }, [products]);
+
+
+
 
   return (<Box
     component="section"
@@ -62,7 +69,7 @@ export default function ProductList({ products, page, hasMore, setPage, categori
                 <CardMedia
                   component="img"
                   sx={{ width: 120, height: 120, objectFit: 'cover' }}
-                  image={p.images?.[0] || '/placeholder.png'}
+                  image={p.imageUrls?.[0] || '/placeholder.png'}
                   alt={p.name}
                 />
                 <CardContent sx={{ flex: 1 }}>

@@ -3,7 +3,7 @@ import { useAllProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
 import { initialState, reducer } from './LocalReducer';
 import type { Category } from '../../types/firebase';
-
+import {  Box} from '@mui/material';
 const ProductFilters = lazy(() => import('./ProductFilters'));
 const ProductList = lazy(() => import('./ProductList'));
 
@@ -46,7 +46,7 @@ export default function HomePage() {
   }, [filteredProducts.length, state.page]);
 
   return (
-    <>
+      <Box sx={{mx: 'auto', width: '80vw', display: 'flex', flexDirection: 'column'}}>
       <Suspense fallback={<div>Loading filters...</div>}>
         <ProductFilters
           state={state}
@@ -63,6 +63,6 @@ export default function HomePage() {
           setPage={(val) => dispatch({ type: 'SET_PAGE', payload: val })}
         />
       </Suspense>
-    </>
+    </Box>
   );
 }
