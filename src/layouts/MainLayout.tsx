@@ -8,32 +8,17 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        overflowX: 'hidden',
-      }}
-    >
-      <Header /> {/* ✅ this is your top navbar with logo, links, etc. */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',        // ✅ horizontally center children
-          width: '100vw',
-          overflow: 'visible',
-        
-        }}
-      >
-        {children} {/* This will include <PageWithStickyFilters> */}
-      </Box>
+    <Box height="100vh" display="flex" flexDirection="column" overflow="hidden" width='100vw'>
+      <Header /> {/* sticky top navbar */}
+      <Box display="flex" flex="1" overflow="hidden">
 
-      <Footer /> {/* ✅ this should remain visible at bottom */}
+        <Box flex="1" overflow="hidden" p={3}>
+          {children} {/* this includes AdminPageLayout → StickyFiltersWrapper */}
+        </Box>
+      </Box>
+      <Footer />
     </Box>
+
 
   );
 }

@@ -1,95 +1,70 @@
-import React, { useEffect, useMemo, useReducer } from 'react';
+import React, { useEffect, useMemo, useReducer, useRef } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  CardMedia,
-  CardActions,
   Button,
-  IconButton,
-  CircularProgress,
-  Snackbar,
-  Alert,
   TextField,
   MenuItem,
   Select,
   InputLabel,
   FormControl,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Grid,
   Divider,
+  Snackbar,
+  Alert,
+  Stack,
 } from '@mui/material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
-import DeleteIcon from '@mui/icons-material/Delete';
-import EditIcon from '@mui/icons-material/Edit';
 import { useNavigate } from 'react-router-dom';
-import { useInView } from 'react-intersection-observer';
 import { motion } from 'framer-motion';
+
+import AdminStickyPage from '../../../layouts/AdminStickyPage';
+import { useAllCategories, Category } from '../../../hooks/useAllCategories';
 import { fetchProductsPage } from '../../../hooks/fetchProductsPage';
-import AdminPageLayout from '../../../layouts/AdminPageLayout';
+import { deleteProduct } from '../../../hooks/deleteProduct';
 import { Product } from '../../../types/firebase';
 import { initialState, reducer } from './LocalReducer';
-import { useAllCategories, Category } from '../../../hooks/useAllCategories';
+import ProductAdminCard from './ProductAdminCard';
+import ProductFilters from './ProductFilters';
 
 export default function AdminProductsPage() {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const [products, setProducts] = useReducer(
-    (prev: Product[], next: Product[] | ((prev: Product[]) => Product[])) =>
-      typeof next === 'function' ? next(prev) : [...prev, ...next],
-    []
-  );
-  const [lastDoc, setLastDoc] = useReducer((_prev: any, next: any) => next, null);
-  const [loading, setLoading] = useReducer((_prev: boolean, next: boolean) => next, false);
-  const [hasMore, setHasMore] = useReducer((_prev: boolean, next: boolean) => next, true);
-
+  const deleteTimerRef = useRef<NodeJS.Timeout | null>(null);
   const { data: categories = [] } = useAllCategories() as { data: Category[] };
   const navigate = useNavigate();
-  const { ref, inView } = useInView({ threshold: 1 });
 
   const loadNextPage = async () => {
-    if (loading || !hasMore) return;
-    setLoading(true);
+    if (state.loading || !state.hasMore) return;
+    dispatch({ type: 'SET_LOADING', payload: true });
 
-    const { products: next, lastVisible } = await fetchProductsPage(lastDoc, {
+    const { products: next, lastVisible } = await fetchProductsPage(state.lastDoc, {
       categoryId: state.selectedCategoryId,
       createdAfter: state.createdAfter?.toDate?.(),
     });
 
-    setProducts((prev) => [...prev, ...next]);
-    setLastDoc(lastVisible);
-    setHasMore(!!lastVisible);
-    setLoading(false);
-  };
-
-  useEffect(() => {
-    // Reset and reload when filters change
-    setProducts([]);
-    setLastDoc(null);
-    setHasMore(true);
-    loadNextPage();
-  }, [state.selectedCategoryId, state.createdAfter]);
-
-  useEffect(() => {
-    if (inView) {
-      loadNextPage();
+    if (state.page === 1) {
+      dispatch({ type: 'SET_PRODUCTS', payload: next });
+    } else {
+      dispatch({ type: 'ADD_PRODUCTS', payload: next });
     }
-  }, [inView]);
-
-  const handleDelete = async (productId: string) => {
-    setProducts((prev) => prev.filter((p) => p.id !== productId));
-    dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: 'Product deleted successfully' });
-    dispatch({ type: 'CLOSE_DELETE_DIALOG' });
+    dispatch({ type: 'SET_LAST_DOC', payload: lastVisible });
+    dispatch({ type: 'SET_HAS_MORE', payload: !!lastVisible });
+    dispatch({ type: 'SET_LOADING', payload: false });
   };
 
+  useEffect(() => {
+    dispatch({ type: 'SET_PRODUCTS', payload: [] });
+    dispatch({ type: 'SET_LAST_DOC', payload: null });
+    dispatch({ type: 'SET_HAS_MORE', payload: true });
+    dispatch({ type: 'SET_LOADING', payload: false });
+    dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: '' });
+    dispatch({ type: 'SET_PENDING_DELETE', payload: null });
+    loadNextPage();
+  }, [state.selectedCategoryId, state.createdAfter, state.page]);
 
-const filteredProducts = useMemo(() => {
+  const filteredProducts = useMemo(() => {
     const term = state.searchTerm.toLowerCase();
-    return products.filter((p) => {
+    return state.products.filter((p) => {
       const matchesText =
         p.name.toLowerCase().includes(term) ||
         p.description?.toLowerCase().includes(term);
@@ -101,7 +76,7 @@ const filteredProducts = useMemo(() => {
           p.createdAt.toDate().getTime() >= state.createdAfter.valueOf());
       return matchesText && matchesCategory && matchesDate;
     });
-  }, [products, state.searchTerm]);
+  }, [state.products, state]);
 
   const groupedProducts = useMemo(() => {
     const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
@@ -114,122 +89,91 @@ const filteredProducts = useMemo(() => {
     return acc;
   }, [filteredProducts, categories]);
 
+  const handleUndo = () => {
+    if (state.pendingDelete) {
+      if (deleteTimerRef.current) clearTimeout(deleteTimerRef.current);
+      dispatch({ type: 'SET_PRODUCTS', payload: [state.pendingDelete, ...state.products] });
+      dispatch({ type: 'SET_PENDING_DELETE', payload: null });
+    }
+  };
+  useEffect(() => {
+    loadNextPage();
+  }, [state.page]);
+
   return (
-    <AdminPageLayout title="Products">
-      <Button
-        variant="contained"
-        onClick={() => navigate('/admin/products/add')}
-        sx={{ mb: 2 }}
+     <AdminStickyPage
+      title="Products"
+      filters={<ProductFilters state={state} dispatch={dispatch} categories={categories} />}
+    >
+      <Box
+        component="section"
+        sx={{
+          flexGrow: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          px: 2,
+          py: 3,
+          height: `50vh`,
+        }}
       >
-        Add Product
-      </Button>
-
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
-          <TextField
-            fullWidth
-            label="Search products"
-            variant="outlined"
-            value={state.searchTerm}
-            onChange={(e) =>
-              dispatch({ type: 'SET_SEARCH_TERM', payload: e.target.value })
-            }
-          />
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <FormControl fullWidth>
-            <InputLabel id="category-filter-label">Category</InputLabel>
-            <Select
-              labelId="category-filter-label"
-              value={state.selectedCategoryId}
-              label="Category"
-              onChange={(e) =>
-                dispatch({ type: 'SET_CATEGORY_FILTER', payload: e.target.value })
-              }
-            >
-              <MenuItem value="">All</MenuItem>
-              {categories.map((cat) => (
-                <MenuItem key={cat.id} value={cat.id}>
-                  {cat.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-        </Grid>
-        <Grid item xs={12} md={4}>
-          <DatePicker
-            label="Created After"
-            value={state.createdAfter}
-            onChange={(newDate) =>
-              dispatch({ type: 'SET_CREATED_AFTER', payload: newDate })
-            }
-            slotProps={{ textField: { fullWidth: true } }}
-          />
-        </Grid>
-        <Grid item xs={12} md={12} textAlign="right">
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={() => dispatch({ type: 'RESET_FILTERS' })}
-          >
-            Clear Filters
-          </Button>
-        </Grid>
-      </Grid>
-
-      <Box component="section" sx={{ py: 3, height: `50vh`, overflowY: 'auto' }}>
         {Object.entries(groupedProducts).map(([category, items]) => (
           <Box key={category} mb={4}>
-            <Divider sx={{ mb: 2 }} textAlign="left">
+            <Divider sx={{ mb: 2 }}>
               <Typography variant="h6">{category}</Typography>
             </Divider>
-            {items.map((product) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, translateY: 20 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Card sx={{ display: 'flex', alignItems: 'center', mb: 2, p: 1 }}>
-                  <CardMedia
-                    component="img"
-                    sx={{ width: 80, height: 80, borderRadius: 1, objectFit: 'cover' }}
-                    image={product.imageUrls?.[0] || 'https://picsum.photos/seed/fallback/100/100'}
-                    alt={product.name}
+            <Stack spacing={2}>
+              {items.map((product) => (
+                <motion.div
+                  key={product.id}
+                  initial={{ opacity: 0, translateY: 12 }}
+                  animate={{ opacity: 1, translateY: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ProductAdminCard
+                    product={product}
+                    onConfirmDelete={(id) => {
+                      const deleted = state.products.find((p) => p.id === id);
+                      if (!deleted) return;
+                      dispatch({ type: 'REMOVE_PRODUCT', payload: id });
+                      dispatch({ type: 'SET_PENDING_DELETE', payload: deleted });
+                      deleteTimerRef.current = setTimeout(async () => {
+                        try {
+                          await deleteProduct(id);
+                          dispatch({ type: 'SET_SUCCESS_MESSAGE', payload: 'Product deleted.' });
+                        } catch (e) {
+                          console.error(e);
+                        }
+                        dispatch({ type: 'SET_PENDING_DELETE', payload: null });
+                      }, 4000);
+                    }}
                   />
-                  <CardContent sx={{ flex: 1 }}>
-                    <Typography variant="subtitle1" fontWeight="bold">
-                      {product.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      ${product.price.toFixed(2)} • Stock: {product.stock}
-                    </Typography>
-                  </CardContent>
-                  <CardActions>
-                    <IconButton onClick={() => navigate(`/admin/products/edit/${product.id}`)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => dispatch({ type: 'OPEN_DELETE_DIALOG', payload: product.id })}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </CardActions>
-                </Card>
-              </motion.div>
-            ))}
+                </motion.div>
+              ))}
+            </Stack>
           </Box>
         ))}
       </Box>
+      <Box display="flex" justifyContent="space-between" alignItems="center" mt={4}>
+        <Button
+          variant="outlined"
+          disabled={state.page === 1}
+          onClick={() => dispatch({ type: 'DECREMENT_PAGE' })}
+        >
+          Previous
+        </Button>
 
-      {hasMore && (
-        <Box ref={ref} display="flex" justifyContent="center" py={3}>
-          {loading && <CircularProgress size={24} />}
-        </Box>
-      )}
+        <Typography variant="body2">Page {state.page}</Typography>
 
-      {!hasMore && filteredProducts.length > 0 && (
+        <Button
+          variant="contained"
+          disabled={!state.hasMore}
+          onClick={() => dispatch({ type: 'INCREMENT_PAGE' })}
+        >
+          Next
+        </Button>
+      </Box>
+
+      {!state.hasMore && filteredProducts.length > 0 && (
         <Box textAlign="center" py={2}>
           <Typography variant="caption" color="text.secondary">
             No more products to load.
@@ -243,25 +187,6 @@ const filteredProducts = useMemo(() => {
         </Typography>
       )}
 
-      <Dialog open={state.deleteDialogOpen} onClose={() => dispatch({ type: 'CLOSE_DELETE_DIALOG' })}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete this product? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => dispatch({ type: 'CLOSE_DELETE_DIALOG' })}>Cancel</Button>
-          <Button
-            onClick={() => handleDelete(state.selectedProductId!)}
-            color="error"
-            variant="contained"
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
-
       <Snackbar
         open={!!state.successMessage}
         autoHideDuration={3000}
@@ -271,6 +196,18 @@ const filteredProducts = useMemo(() => {
           {state.successMessage}
         </Alert>
       </Snackbar>
-    </AdminPageLayout>
+
+      <Snackbar
+        open={!!state.pendingDelete}
+        autoHideDuration={4000}
+        onClose={() => dispatch({ type: 'SET_PENDING_DELETE', payload: null })}
+        message={`Deleted "${state.pendingDelete?.name}"`}
+        action={
+          <Button color="secondary" size="small" onClick={handleUndo}>
+            UNDO
+          </Button>
+        }
+      />
+    </AdminStickyPage>
   );
 }

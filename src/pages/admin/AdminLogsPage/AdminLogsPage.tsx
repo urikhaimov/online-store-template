@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import { fetchLogs, fetchLogsByCategory, LogEntry } from '../../../api/logs';
 import { SelectChangeEvent } from '@mui/material';
-import AdminPageLayout from '../../../layouts/AdminPageLayout';
+import AdminStickyPage from '../../../layouts/AdminStickyPage';
 
 
 
@@ -50,7 +50,7 @@ const AdminLogsPage: React.FC = () => {
 
   return (
 
-    <AdminPageLayout title={'Admin Logs'}>
+    <AdminStickyPage title={'Admin Logs'}>
       <FormControl sx={{ mb: 2, minWidth: 200 }}>
         <InputLabel>Filter by Category</InputLabel>
         <Select
@@ -92,7 +92,7 @@ const AdminLogsPage: React.FC = () => {
           )}
         </Paper>
       )}
-    </AdminPageLayout>
+    </AdminStickyPage>
   );
 };
 

@@ -21,7 +21,7 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import { collection, getDocs, doc, updateDoc, deleteDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import AdminPageLayout from '../../../layouts/AdminPageLayout';
+import AdminStickyPage from '../../../layouts/AdminStickyPage';
 import useDebounce from '../../../hooks/useDebouncedValue'; // ✅ import
 
 interface User {
@@ -99,7 +99,7 @@ export default function AdminUsersPage() {
   if (error) return <Typography p={4}>❌ Error loading users</Typography>;
 
   return (
-    <AdminPageLayout title="Manage Users">
+    <AdminStickyPage title="Manage Users">
       <Box mb={2}>
         <TextField
           fullWidth
@@ -170,6 +170,6 @@ export default function AdminUsersPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </AdminPageLayout>
+    </AdminStickyPage>
   );
 }

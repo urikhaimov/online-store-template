@@ -27,9 +27,9 @@ export default function PageWithStickyFilters({ title, filters, children }: Prop
   const headerHeight = isMobile ? 56 : 64;
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 ,  width: '100%',
+    <Box sx={{ display: 'flex', flexDirection: 'column', flexGrow: 1 ,  width: '100vw',
     maxWidth: {
-      xs: '100%',   // mobile
+      xs: '100vw',   // mobile
       sm: '95vw',
       md: '90vw',
       lg: '1200px', // desktop cap

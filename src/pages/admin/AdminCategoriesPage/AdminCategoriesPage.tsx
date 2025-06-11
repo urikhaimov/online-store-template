@@ -18,7 +18,7 @@ import {
 } from '@mui/material';
 
 import { Category } from '../../../types/firebase';
-import AdminPageLayout from '../../../layouts/AdminPageLayout';
+import AdminStickyPage from '../../../layouts/AdminStickyPage';
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [newCategory, setNewCategory] = useState('');
@@ -48,7 +48,7 @@ export default function AdminCategoriesPage() {
   }, []);
 
   return (
-    <AdminPageLayout title={'Admin Categories'}>
+    <AdminStickyPage title={'Admin Categories'}>
   
       <Box display="flex" gap={2} mt={2}>
         <TextField
@@ -71,6 +71,6 @@ export default function AdminCategoriesPage() {
           </ListItem>
         ))}
       </List>
-    </AdminPageLayout>
+    </AdminStickyPage>
   );
 }
