@@ -1,10 +1,8 @@
 import React, { useMemo, useReducer, Suspense, lazy, useEffect } from 'react';
-import dayjs, { Dayjs } from 'dayjs';
-import PublicPageLayout from '../../layouts/public/PublicPageLayout';
 import { useAllProducts } from '../../hooks/useProducts';
 import { useCategories } from '../../hooks/useCategories';
-import { Category } from '../../types/firebase';
 import { initialState, reducer } from './LocalReducer';
+import type { Category } from '../../types/firebase';
 
 const ProductFilters = lazy(() => import('./ProductFilters'));
 const ProductList = lazy(() => import('./ProductList'));
@@ -15,10 +13,8 @@ export default function HomePage() {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const pageSize = 10;
-
-  // Filter products
   const filteredProducts = useMemo(() => {
-    return products.filter((p) => {
+    const matches = products.filter((p) => {
       const txt = state.search.toLowerCase();
       const inText =
         p.name.toLowerCase().includes(txt) ||
@@ -31,26 +27,26 @@ export default function HomePage() {
           p.createdAt.toDate().getTime() >= state.createdAfter.valueOf());
       return inText && inCat && inDate;
     });
+
+    return matches;
   }, [products, state]);
 
-  // Slice for pagination
   const paginatedProducts = useMemo(() => {
     const start = (state.page - 1) * pageSize;
     const end = start + pageSize;
     return filteredProducts.slice(start, end);
   }, [filteredProducts, state.page]);
 
-  // Update hasMore flag
   useEffect(() => {
     const start = (state.page - 1) * pageSize;
     dispatch({
       type: 'SET_HAS_MORE',
       payload: start + pageSize < filteredProducts.length,
     });
-  }, [filteredProducts, state.page]);
+  }, [filteredProducts.length, state.page]);
 
   return (
-    <PublicPageLayout>
+    <>
       <Suspense fallback={<div>Loading filters...</div>}>
         <ProductFilters
           state={state}
@@ -67,6 +63,6 @@ export default function HomePage() {
           setPage={(val) => dispatch({ type: 'SET_PAGE', payload: val })}
         />
       </Suspense>
-    </PublicPageLayout>
+    </>
   );
 }
