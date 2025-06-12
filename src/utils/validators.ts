@@ -28,22 +28,30 @@ export function validateLuhn(value: string): true | string {
 
   return sum % 10 === 0 ? true : 'Invalid card number (Luhn check failed)';
 }
+// utils/validators.ts
 
 export function validateExpiry(value: string): true | string {
-  const [monthStr, yearStr] = value.split('/');
-  const month = parseInt(monthStr, 10);
-  const year = parseInt('20' + yearStr, 10); // YY → 20YY
+  const [month, year] = value.split('/');
 
-  if (isNaN(month) || isNaN(year)) return 'Invalid date format';
-  if (month < 1 || month > 12) return 'Invalid month';
+  if (!month || !year || !/^\d{2}$/.test(month) || !/^\d{2}$/.test(year)) {
+    return 'Invalid expiry format';
+  }
+
+  const monthNum = parseInt(month, 10);
+  const yearNum = parseInt(year, 10);
+
+  if (monthNum < 1 || monthNum > 12) {
+    return 'Invalid month';
+  }
 
   const now = new Date();
-  const currentMonth = now.getMonth() + 1;
-  const currentYear = now.getFullYear();
+  const currentMonth = now.getMonth() + 1; // 0-indexed
+  const currentYear = now.getFullYear() % 100; // last two digits
 
-  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+  if (yearNum < currentYear || (yearNum === currentYear && monthNum < currentMonth)) {
     return 'Card has expired';
   }
 
   return true;
 }
+

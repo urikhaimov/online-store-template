@@ -12,7 +12,8 @@ import { useForm, Controller } from 'react-hook-form';
 import { useCartStore } from '../../store/cartStore';
 import { useNavigate } from 'react-router-dom';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { getCardBrand, formatCardNumber } from '../../utils/cardUtils';
+
+import ControlledTextField from '../../components/ControlledTextField'
 import {
   validateLuhn,
   validateExpiry,
@@ -20,6 +21,15 @@ import {
   validateZip,
   validateCVC,
 } from '../../utils/validators';
+
+
+import {
+  formatCardNumber,
+  formatExpiry,
+  formatCVC,
+  formatZip,
+ 
+} from '../../utils/formatters';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
@@ -59,160 +69,109 @@ export default function CheckoutPage() {
   };
 
   return (
-    <Box p={3}>
+     <Box sx={{mx: 'auto', width: '80vw', display: 'flex', flexDirection: 'column'}}>
       <Typography variant="h4" gutterBottom>Checkout</Typography>
 
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Grid container spacing={2}>
-          <Grid item xs={12} sm={6}>
-            <Controller
+          <Grid item xs={6} sm={3}>
+           <ControlledTextField
               name="fullName"
               control={control}
-              rules={{ required: 'Full Name is required' }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Full Name"
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+              label="Full Name"
+              rules={{
+                required: 'Full Name is required',
+              }}
+             
             />
+
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Controller
+          <Grid item xs={6} sm={3}>
+           <ControlledTextField
               name="email"
               control={control}
+              label="Email"
               rules={{
                 required: 'Email is required',
-                validate: (val) => validateEmail(val) || 'Invalid card number (Luhn failed)',
+                validate: validateEmail,
               }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Email"
-                  type="email"
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
             />
           </Grid>
 
-          <Grid item xs={12}>
-            <Controller
+          <Grid item xs={6} sm={3}>
+            <ControlledTextField
               name="address"
               control={control}
-              rules={{ required: 'Address is required' }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Shipping Address"
-                  multiline
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+              label="Address"
+              rules={{
+                required: 'Address is required',
+              }}
+              inputProps={{ maxLength: 10 }}
             />
           </Grid>
 
-          <Grid item xs={12} sm={6}>
-            <Controller
+         <Grid item xs={6} sm={3}>
+            <ControlledTextField
               name="zip"
               control={control}
+              label="ZIP Code"
               rules={{
-                required: 'ZIP code is required',
+                required: 'ZIP is required',
                 validate: validateZip,
               }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="ZIP Code"
-                  inputProps={{ maxLength: 10, inputMode: 'numeric' }}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+              inputProps={{ maxLength: 10 }}
+              onChangeFormat={formatZip}
             />
           </Grid>
 
 
-          <Grid item xs={12} sm={6}>
-            <Controller
+          <Grid item xs={6} sm={3}>
+            <ControlledTextField
               name="cardNumber"
               control={control}
+              label="Card Number"
               rules={{
                 required: 'Card number is required',
-                validate: (val) => validateLuhn(val) || 'Invalid card number (Luhn failed)',
+                validate: validateLuhn,
+              
               }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label={`Card Number (${cardBrand})`}
-                  placeholder="1234 5678 9012 3456"
-                  value={formatCardNumber(field.value || '')}
-                  onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, '');
-                    field.onChange(raw);
-                    setCardBrand(getCardBrand(raw));
-                  }}
-                  inputProps={{ maxLength: 23, inputMode: 'numeric' }}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+              
+              onChangeFormat={formatCardNumber}
             />
+
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <Controller
+           <ControlledTextField
               name="expiry"
               control={control}
+              label="Expiry Date"
               rules={{
-                required: 'Expiry date is required',
+                required: 'Expiry Date is required',
                 validate: validateExpiry,
               }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="Expiry (MM/YY)"
-                  placeholder="MM/YY"
-                  inputProps={{ maxLength: 5, inputMode: 'numeric' }}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+             
+              onChangeFormat={formatExpiry}
             />
+
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <Controller
+            <ControlledTextField
               name="cvc"
               control={control}
+              label="CVC"
+              type="password"
               rules={{
                 required: 'cvc is required',
                 validate: validateCVC,
               }}
-              render={({ field, fieldState }) => (
-                <TextField
-                  {...field}
-                  fullWidth
-                  label="CVC"
-                  type="password"
-                  inputProps={{ maxLength: 4, inputMode: 'numeric' }}
-                  error={!!fieldState.error}
-                  helperText={fieldState.error?.message || ''}
-                />
-              )}
+              
+              onChangeFormat={formatCVC}
             />
           </Grid>
+
 
           <Grid item xs={12}>
             <Typography variant="subtitle1" mt={3}>Stripe Test Card Input</Typography>
