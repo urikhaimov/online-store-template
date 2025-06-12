@@ -14,3 +14,21 @@ export function formatExpiry(value: string): string {
 
   return [month, year].filter(Boolean).join('/');
 }
+export function formatCardNumber(value: string): string {
+  const cleaned = value.replace(/\D/g, ''); // remove non-digits
+
+  if (cleaned.startsWith('34') || cleaned.startsWith('37')) {
+    // Amex: 4-6-5 format
+    return cleaned
+      .replace(/^(\d{0,4})(\d{0,6})(\d{0,5}).*/, (_, g1, g2, g3) =>
+        [g1, g2, g3].filter(Boolean).join(' ')
+      )
+      .trim();
+  }
+
+  // Default: 4-4-4-4 format (Visa, MasterCard, etc.)
+  return cleaned
+    .replace(/(\d{4})(?=\d)/g, '$1 ')
+    .trim();
+}
+
