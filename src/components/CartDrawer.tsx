@@ -79,9 +79,10 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
             color="secondary"
             fullWidth
             sx={{ mb: 1 }}
+            disabled={items.length === 0} // ✅ disable if empty
             onClick={() => {
               onClose();
-              window.location.href = '/checkout';
+              navigate('/checkout');
             }}
           >
             Checkout
