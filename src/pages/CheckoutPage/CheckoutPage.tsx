@@ -1,80 +1,45 @@
+import React from 'react';
 import {
   Box,
-
+  Typography,
   TextField,
   Button,
-
-  CircularProgress,
-  Card, CardContent, CardHeader
+  Divider,
 } from '@mui/material';
+import { useCartStore } from '../../store/cartStore';
 
+export default function CheckoutPage() {
+  const { items } = useCartStore();
 
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
-interface CartItem {
-  id: string;
-  name: string;
-  quantity: number;
-  price: number;
-}
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    // TODO: integrate with Firebase function or Stripe
+    alert('Order placed!');
+  };
 
-interface CheckoutPageProps {
-  items: CartItem[];
-  total: number;
-  onSubmit: () => void;
-  loading: boolean;
-  success: boolean;
-  register: any;
-  errors: any;
-  handleSubmit: any;
-}
-export default function CheckoutPage({ items = [], total = 0, onSubmit, loading, success, register, errors, handleSubmit }: CheckoutPageProps) {
   return (
-    <Box
-      flexGrow={1}
-      display="flex"
-      justifyContent="center"
-      alignItems="center"
-      px={2}
-      py={4}
-      sx={{
-        width: '100%', // Safe
-        maxWidth: '100vw', // Prevent overflow
-        overflowX: 'hidden', // Enforced here too
-      }}
-    >
-      <Card
-        sx={{
-          width: '100%',
-          maxWidth: 500,
-          mx: 'auto',
-          boxShadow: 3,
-        }}
-      >
-        <CardHeader title="Payment Details (Mock Stripe)" />
-        <CardContent>
-          <Box
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-            sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
-          >
-            <TextField label="Name on Card" fullWidth {...register('name')} />
-            <TextField label="Card Number" fullWidth {...register('cardNumber')} />
-            <TextField label="Expiration Date (MM/YY)" fullWidth {...register('expiry')} />
-            <TextField label="CVV" fullWidth {...register('cvv')} />
+    <Box p={3}>
+      <Typography variant="h4" gutterBottom>
+        Checkout
+      </Typography>
 
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              fullWidth
-              sx={{ mt: 2 }}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} color="inherit" /> : 'Pay with Stripe (Mock)'}
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
+      <form onSubmit={handleSubmit}>
+        <TextField label="Name" fullWidth required sx={{ mb: 2 }} />
+        <TextField label="Email" type="email" fullWidth required sx={{ mb: 2 }} />
+        <TextField label="Shipping Address" fullWidth required multiline sx={{ mb: 2 }} />
+
+        <Divider sx={{ my: 3 }} />
+
+        <Typography variant="body1" gutterBottom>
+          Total: ${subtotal.toFixed(2)}
+        </Typography>
+
+        <Button variant="contained" type="submit">
+          Place Order
+        </Button>
+      </form>
     </Box>
   );
 }

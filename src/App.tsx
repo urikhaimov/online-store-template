@@ -86,16 +86,7 @@ export default function App() {
               path="/checkout"
               element={
                 <ProtectedRoute>
-                  <CheckoutPage
-                    items={[]}
-                    total={0}
-                    onSubmit={() => {}}
-                    loading={false}
-                    success={false}
-                    register={() => {}}
-                    errors={{}}
-                    handleSubmit={(fn: any) => (e: any) => fn(e)}
-                  />
+                  <CheckoutPage/>
                 </ProtectedRoute>
               }
             />

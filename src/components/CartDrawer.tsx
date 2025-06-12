@@ -13,20 +13,21 @@ import {
   Fade,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import { useCartStore } from '../stores/useCartStore';
+import { useCartStore } from '../store/cartStore';
 
 interface CartDrawerProps {
   open: boolean;
   onClose: () => void;
 }
 
-export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
+const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   const navigate = useNavigate();
   const items = useCartStore((s) => s.items);
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
-  const total = useCartStore((s) => s.total)();
+  const total = items.reduce((s, i) => s + i.quantity, 0);
+  const subtotal = items.reduce((s, i) => s + i.quantity * i.price, 0);
 
   return (
     <Drawer anchor="right" open={open} onClose={onClose}>
@@ -72,7 +73,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
 
         <Box sx={{ p: 2 }}>
           <Typography variant="subtitle1" sx={{ mb: 1 }}>
-            Total: ${total.toFixed(2)}
+            Total: ${subtotal.toFixed(2)}
           </Typography>
           <Button
             variant="contained"
@@ -94,3 +95,4 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
     </Drawer>
   );
 };
+export default CartDrawer;

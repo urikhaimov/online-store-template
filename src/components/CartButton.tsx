@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
-import { CartDrawer } from './CartDrawer';
+import CartDrawer from './CartDrawer';
 import { useCartStore } from '../stores/useCartStore';
 
 const CartButton: React.FC = () => {
