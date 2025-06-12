@@ -1,5 +1,5 @@
 // src/pages/CheckoutPage/CheckoutPage.tsx
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -15,7 +15,7 @@ import { getCardBrand } from '../../utils/cardUtils';
 import { isValidLuhn } from '../../utils/luhnCheck';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { formatCardNumber } from '../../utils/formatCardNumber';
-import{formatExpiry} from '../../utils/cardUtils';
+import { formatExpiry } from '../../utils/cardUtils';
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -23,7 +23,7 @@ export default function CheckoutPage() {
 
   const stripe = useStripe();
   const elements = useElements();
-
+  const expiryRef = useRef<HTMLInputElement | null>(null);
   const {
     register,
     handleSubmit,
@@ -136,8 +136,8 @@ export default function CheckoutPage() {
             />
           </Grid>
 
-         
-          // Inside your form JSX
+
+
           <Grid item xs={6} sm={3}>
             <Controller
               name="expiry"
@@ -151,7 +151,7 @@ export default function CheckoutPage() {
                 validate: (value: string) => {
                   const [monthStr, yearStr] = value.split('/');
                   const month = parseInt(monthStr, 10);
-                  const year = parseInt('20' + yearStr, 10); // assuming 20YY
+                  const year = parseInt('20' + yearStr, 10);
 
                   if (isNaN(month) || isNaN(year)) return 'Invalid date';
 
@@ -174,9 +174,13 @@ export default function CheckoutPage() {
                   placeholder="MM/YY"
                   value={formatExpiry(field.value || '')}
                   onChange={(e) => {
-                    const raw = e.target.value.replace(/\D/g, '').slice(0, 4); // 4 digits max
+                    const raw = e.target.value.replace(/\D/g, '').slice(0, 4);
                     const formatted = formatExpiry(raw);
                     field.onChange(formatted);
+
+                    if (formatted.length === 5) {
+                      expiryRef.current?.focus();
+                    }
                   }}
                   inputProps={{
                     maxLength: 5,
@@ -187,6 +191,7 @@ export default function CheckoutPage() {
                 />
               )}
             />
+
           </Grid>
 
           <Grid item xs={6} sm={3}>
