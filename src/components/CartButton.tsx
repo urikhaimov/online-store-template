@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { IconButton, Badge } from '@mui/material';
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
 import CartDrawer from './CartDrawer';
-import { useCartStore } from '../stores/useCartStore';
+import { useCartStore } from '../store/cartStore';
 
 const CartButton: React.FC = () => {
   const [open, setOpen] = useState(false);

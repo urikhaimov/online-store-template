@@ -26,7 +26,6 @@ const CartDrawer: React.FC<CartDrawerProps> = ({ open, onClose }) => {
   const updateQuantity = useCartStore((s) => s.updateQuantity);
   const removeFromCart = useCartStore((s) => s.removeFromCart);
   const clearCart = useCartStore((s) => s.clearCart);
-  const total = items.reduce((s, i) => s + i.quantity, 0);
   const subtotal = items.reduce((s, i) => s + i.quantity * i.price, 0);
 
   return (
