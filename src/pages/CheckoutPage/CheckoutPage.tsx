@@ -1,37 +1,65 @@
-// src/pages/CheckoutPage.tsx
-import React from 'react';
+// src/pages/CheckoutPage/CheckoutPage.tsx
+import React, { useState } from 'react';
 import {
   Box,
   Typography,
-  TextField,
+  Grid,
   Button,
   Divider,
-  Grid,
 } from '@mui/material';
 import { useForm } from 'react-hook-form';
 import { useCartStore } from '../../store/cartStore';
 import { useNavigate } from 'react-router-dom';
+import FormTextField from '../../components/FormTextField';
+import FormMaskedInput from '../../components/FormMaskedInput';
+import { getCardBrand } from '../../utils/cardUtils';
+import { isValidLuhn } from '../../utils/luhnCheck';
+import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
+  const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const navigate = useNavigate();
 
-  const subtotal = items.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
+  const stripe = useStripe();
+  const elements = useElements();
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
+    getValues,
   } = useForm();
 
-  const onSubmit = (data: any) => {
-    console.log('Form Data:', data);
-    alert('Order placed successfully!');
-    clearCart();
-    navigate('/thank-you');
+  const [cardBrand, setCardBrand] = useState<'Visa' | 'MasterCard' | 'Amex' | 'Unknown'>('Unknown');
+
+  const handleCardInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setCardBrand(getCardBrand(value));
+  };
+
+  const cardMask = cardBrand === 'Amex' ? '9999 999999 99999' : '9999 9999 9999 9999';
+
+  const onSubmit = async () => {
+    if (!stripe || !elements) return;
+
+    const result = await stripe.createPaymentMethod({
+      type: 'card',
+      card: elements.getElement(CardElement)!,
+      billing_details: {
+        name: getValues('fullName'),
+        email: getValues('email'),
+      },
+    });
+
+    if (result.error) {
+      alert(result.error.message);
+    } else {
+      alert('Payment method created (test)!');
+      clearCart();
+      navigate('/thank-you');
+    }
   };
 
   return (
@@ -43,100 +71,87 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <TextField
+            <FormTextField
               label="Full Name"
-              fullWidth
-              required
-              {...register('fullName', { required: 'Full Name is required' })}
-              error={!!errors.fullName}
-              helperText={errors.fullName?.message?.toString()} // ✅ FIXED
+              register={register('fullName', { required: 'Full Name is required' })}
+              errorObject={errors.fullName}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
+            <FormTextField
               label="Email"
               type="email"
-              fullWidth
-              required
-              {...register('email', {
+              register={register('email', {
                 required: 'Email is required',
                 pattern: {
                   value: /^\S+@\S+$/i,
                   message: 'Invalid email address',
                 },
               })}
-              error={!!errors.email}
-               helperText={errors.email?.message?.toString()} // ✅ FIXED
+              errorObject={errors.email}
             />
           </Grid>
 
           <Grid item xs={12}>
-            <TextField
+            <FormTextField
               label="Shipping Address"
-              fullWidth
-              required
               multiline
-              {...register('address', { required: 'Address is required' })}
-              error={!!errors.address}
-                helperText={errors.address?.message?.toString()} // ✅ FIXED
+              register={register('address', { required: 'Address is required' })}
+              errorObject={errors.address}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <TextField
-              label="Credit Card Number"
-              fullWidth
-              required
-              inputProps={{ maxLength: 19 }}
-              {...register('cardNumber', {
+            <FormMaskedInput
+              label={`Card Number (${cardBrand})`}
+              mask={cardMask}
+              register={register('cardNumber', {
                 required: 'Card number is required',
-                pattern: {
-                  value: /^\d{4} \d{4} \d{4} \d{4}$/,
-                  message: 'Format: 1234 5678 9012 3456',
-                },
+                validate: (val) => isValidLuhn(val) || 'Invalid card number (Luhn failed)',
               })}
-              placeholder="1234 5678 9012 3456"
-              error={!!errors.cardNumber}
-              helperText={errors.cardNumber?.message?.toString()} // ✅ FIXED
+              errorObject={errors.cardNumber}
+              onChange={handleCardInput}
             />
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <TextField
+            <FormMaskedInput
               label="Expiry (MM/YY)"
-              fullWidth
-              required
-              {...register('expiry', {
+              mask="99/99"
+              placeholder="MM/YY"
+              register={register('expiry', {
                 required: 'Expiry date is required',
                 pattern: {
                   value: /^(0[1-9]|1[0-2])\/\d{2}$/,
-                  message: 'Format: MM/YY',
+                  message: 'Format MM/YY',
                 },
               })}
-              placeholder="08/25"
-              error={!!errors.expiry}
-                helperText={errors.expiry?.message?.toString()} // ✅ FIXED
+              errorObject={errors.expiry}
             />
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <TextField
+            <FormTextField
               label="CVC"
-              fullWidth
-              required
               type="password"
               inputProps={{ maxLength: 4 }}
-              {...register('cvc', {
+              register={register('cvc', {
                 required: 'CVC is required',
                 pattern: {
                   value: /^[0-9]{3,4}$/,
                   message: '3 or 4 digit CVC',
                 },
               })}
-              error={!!errors.cvc}
-              helperText={errors.cvc?.message?.toString()} // ✅ FIXED
+              errorObject={errors.cvc}
             />
+          </Grid>
+
+          <Grid item xs={12}>
+            <Typography variant="subtitle1" mt={3}>
+              Stripe Test Card Input
+            </Typography>
+            <CardElement options={{ style: { base: { fontSize: '16px' } } }} />
           </Grid>
         </Grid>
 
@@ -149,7 +164,7 @@ export default function CheckoutPage() {
         <Button
           variant="contained"
           type="submit"
-          disabled={items.length === 0}
+          disabled={items.length === 0 || !stripe || !elements}
         >
           Place Order
         </Button>

@@ -17,7 +17,7 @@ export const useFirebaseAuthListener = () => {
           const role: Role = isValidRole(roleClaim) ? roleClaim : 'user';
 
           const userData = {
-            id: firebaseUser.uid,
+            uid: firebaseUser.uid,
             email: firebaseUser.email || '',
             name: firebaseUser.displayName || '',
             role,

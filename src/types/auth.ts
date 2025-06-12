@@ -1,10 +1,13 @@
 import { User, UserCredential } from 'firebase/auth';
 
+import type { Role } from '../constants/roles';
+
+
 export interface AppUser {
-  id: string;
+  uid: string;
   name: string;
   email: string;
-  role: 'user' | 'admin';
+  role: Role;
 }
 export interface AuthContextType {
   user: AppUser | null;

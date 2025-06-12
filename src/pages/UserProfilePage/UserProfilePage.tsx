@@ -33,7 +33,7 @@ export default function UserProfilePage() {
           <strong>Email:</strong> {user?.email}
         </Typography>
         <Typography variant="body1">
-          <strong>UID:</strong> {user?.id}
+          <strong>UID:</strong> {user?.uid}
         </Typography>
       </Paper>
     </Box>

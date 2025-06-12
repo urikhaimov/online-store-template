@@ -12,13 +12,15 @@ import {
 
 import { ProtectedRoute, AdminProtectedRoute } from './components/ProtectedRoutes';
 import HomePage from './pages/HomePage/HomePage';
-import ProductPage from './pages/ProductPage/ProductPage';
-import CartPage from './pages/CartPage/CartPage';
-import CheckoutPage from './pages/CheckoutPage/CheckoutPage';
-import LoginPage from './pages/LoginPage/LoginPage';
-import SignupPage from './pages/SignupPage/SignupPage';
-import MyOrdersPage from './pages/MyOrdersPage/MyOrdersPage';
-import NotFoundPage from './pages/NotFoundPage/NotFoundPage';
+import ProductPage from './pages/ProductPage';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import MyOrdersPage from './pages/MyOrdersPage';
+import OrderDetailPage  from './pages/OrderDetailPage';
+import NotFoundPage from './pages/NotFoundPage';
+import ThankYouPage from './pages/ThankYouPage';
 import Layout from './layouts/MainLayout';
 import AdminDashboardLayout from './layouts/AdminDashboardLayout/AdminDashboardLayout';
 import AdminThemePage from './pages/admin/AdminThemePage/ThemePage';
@@ -33,9 +35,12 @@ import { useFirebaseAuthListener } from './hooks/useFirebaseAuthListener';
 import { useAuthStore, useIsAdmin } from './stores/useAuthStore';
 import { useThemeContext } from './context/ThemeContext';
 
+
+
+
 import './App.css';
 
-const stripePromise = loadStripe('pk_test_XXXXXXXXXXXXXXXXXXXXXXXX');
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY!);
 
 export default function App() {
   useFirebaseAuthListener();
@@ -45,7 +50,7 @@ export default function App() {
   const hasRedirected = useRef(false);
   const { consumeRedirect } = useRedirect();
   const { theme, isLoading } = useThemeContext();
- 
+
   useEffect(() => {
     if (loading || hasRedirected.current) return;
 
@@ -86,10 +91,21 @@ export default function App() {
               path="/checkout"
               element={
                 <ProtectedRoute>
-                  <CheckoutPage/>
+                  <CheckoutPage />
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/order/:id"
+              element={
+                <ProtectedRoute>
+                  <OrderDetailPage />
+                </ProtectedRoute>
+              }
+            />
+
+
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route
@@ -100,6 +116,17 @@ export default function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/thank-you"
+              element={
+                <ProtectedRoute>
+                  <ThankYouPage />
+                </ProtectedRoute>
+              }
+            />
+
+
+
             <Route
               path="/admin/*"
               element={
@@ -113,8 +140,8 @@ export default function App() {
               <Route path="users" element={<AdminUsersPage />} />
               <Route path="logs" element={<AdminLogsPage />} />
               <Route path="products" element={<AdminProductsPage />} />
-               <Route path="products/add" element={<ProductFormPage mode="add" />} />
-                <Route path="products/edit/:productId" element={<ProductFormPage mode="edit" />} />
+              <Route path="products/add" element={<ProductFormPage mode="add" />} />
+              <Route path="products/edit/:productId" element={<ProductFormPage mode="edit" />} />
               <Route path="theme" element={<AdminThemePage />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />

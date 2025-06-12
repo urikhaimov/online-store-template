@@ -1,7 +1,7 @@
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, UserCredential } from 'firebase/auth';
 import { auth } from '../firebase';
 import { useAuthStore } from '../stores/useAuthStore';
-import { AppUser } from '../types/AppUser';
+import { AppUser } from '../types/auth';
 
 export interface SafeAuth {
   user: AppUser | null;

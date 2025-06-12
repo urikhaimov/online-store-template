@@ -7,7 +7,7 @@ import {
   getIdTokenResult,
 } from 'firebase/auth';
 import { auth } from '../firebase';
-import { AppUser } from '../types/AppUser';
+import { AppUser } from '../types/auth';
 import { Role } from '../types/Role';
 
 export interface AuthContextType {
@@ -32,7 +32,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         const role: Role = rawRole === 'admin' ? 'admin' : 'user';
 
         setUser({
-          id: firebaseUser.uid,
+          uid: firebaseUser.uid,
           name: firebaseUser.displayName || '',
           email: firebaseUser.email || '',
           role,

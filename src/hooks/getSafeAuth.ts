@@ -4,9 +4,10 @@ import {
   signOut,
   UserCredential,
 } from 'firebase/auth';
-import { auth } from '../firebase';
+import { getDoc, doc } from 'firebase/firestore';
+import { auth, db } from '../firebase';
 import { useAuthStore } from '../stores/useAuthStore';
-import { AppUser } from '../types/AppUser';
+import { AppUser } from '../types/auth';
 
 export interface SafeAuth {
   user: AppUser | null;
@@ -19,14 +20,30 @@ export interface SafeAuth {
 
 export function useSafeAuth(): SafeAuth {
   const { user, loading } = useAuthStore();
-
+  const set = useAuthStore.setState;
   const isAdmin = user?.role === 'admin';
 
-  const login = async (email: string, password: string) => {
-    return signInWithEmailAndPassword(auth, email, password);
+  const login = async (email: string, password: string): Promise<UserCredential> => {
+    const cred = await signInWithEmailAndPassword(auth, email, password);
+    const profileSnap = await getDoc(doc(db, 'users', cred.user.uid));
+
+    const profile = profileSnap.exists() ? profileSnap.data() : {};
+    const role = profile.role ?? 'user';
+    const name = profile.name ?? 'Guest';
+
+    set({
+      user: {
+        uid: cred.user.uid,
+        email: cred.user.email || '',
+        role,
+        name,
+      },
+    });
+
+    return cred;
   };
 
-  const signup = async (email: string, password: string) => {
+  const signup = async (email: string, password: string): Promise<UserCredential> => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
