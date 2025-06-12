@@ -27,7 +27,6 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
-    watch,
     formState: { errors },
     getValues,
   } = useForm();
@@ -109,9 +108,9 @@ export default function CheckoutPage() {
               register={register('cardNumber', {
                 required: 'Card number is required',
                 validate: (val) => isValidLuhn(val) || 'Invalid card number (Luhn failed)',
+                onChange: handleCardInput, // ✅ Passed inside register config
               })}
-              errorObject={errors.cardNumber}
-              onChange={handleCardInput}
+              error={errors.cardNumber}
             />
           </Grid>
 
@@ -127,7 +126,7 @@ export default function CheckoutPage() {
                   message: 'Format MM/YY',
                 },
               })}
-              errorObject={errors.expiry}
+              error={errors.expiry}
             />
           </Grid>
 

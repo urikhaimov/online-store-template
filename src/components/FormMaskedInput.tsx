@@ -1,28 +1,33 @@
 import React from 'react';
 import InputMask from 'react-input-mask';
 import { TextField, TextFieldProps } from '@mui/material';
-import { RHFError } from '../types/RHFError';
+import {
+  FieldError,
+  FieldErrorsImpl,
+  Merge,
+  UseFormRegisterReturn,
+} from 'react-hook-form';
 
-type Props = Omit<TextFieldProps, 'error'> & {
+interface Props extends Omit<TextFieldProps, 'error'> {
   label: string;
   mask: string;
-  register: any;
-  errorObject?: RHFError;
-};
+  register: UseFormRegisterReturn;
+  error?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
+}
 
-const FormMaskedInput: React.FC<Props> = ({ label, mask, register, errorObject, ...rest }) => (
-  <InputMask mask={mask} {...register}>
-    {(inputProps: any) => (
-      <TextField
-        {...inputProps}
-        label={label}
-        fullWidth
-        error={!!errorObject}
-        helperText={errorObject ? String(errorObject?.message) : ''}
-        {...rest}
-      />
-    )}
-  </InputMask>
-);
-
-export default FormMaskedInput;
+export default function FormMaskedInput({ label, mask, register, error, ...rest }: Props) {
+  return (
+    <InputMask {...register} mask={mask}>
+      {(inputProps: any) => (
+        <TextField
+          {...inputProps}
+          fullWidth
+          label={label}
+          error={!!error}
+          helperText={error?.message}
+          {...rest}
+        />
+      )}
+    </InputMask>
+  );
+}
