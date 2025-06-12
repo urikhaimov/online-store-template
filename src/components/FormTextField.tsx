@@ -1,22 +1,32 @@
-import { TextField, TextFieldProps } from '@mui/material';
 import React from 'react';
-import { RHFError } from '../types/RHFError';
+import { TextField, TextFieldProps } from '@mui/material';
+import {
+  FieldError,
+  FieldErrorsImpl,
+  Merge,
+  UseFormRegisterReturn,
+} from 'react-hook-form';
 
-type Props = TextFieldProps & {
+interface Props extends Omit<TextFieldProps, 'error'> {
   label: string;
-  register: any;
-  errorObject?: RHFError; // renamed to avoid conflict with MUI's `error` prop
-};
+  register: UseFormRegisterReturn;
+  errorObject?: FieldError | Merge<FieldError, FieldErrorsImpl<any>>;
+}
 
-const FormTextField: React.FC<Props> = ({ label, register, errorObject, ...rest }) => (
-  <TextField
-    label={label}
-    fullWidth
-    error={!!errorObject}
-    helperText={errorObject ? String(errorObject?.message) : ''}
-    {...register}
-    {...rest}
-  />
-);
-
-export default FormTextField;
+export default function FormTextField({
+  label,
+  register,
+  errorObject,
+  ...rest
+}: Props) {
+  return (
+    <TextField
+      {...register}
+      fullWidth
+      label={label}
+      error={!!errorObject}
+      helperText={typeof errorObject?.message === 'string' ? errorObject.message : ''}
+      {...rest}
+    />
+  );
+}

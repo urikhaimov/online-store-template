@@ -6,16 +6,16 @@ import {
   Grid,
   Button,
   Divider,
+  TextField,
 } from '@mui/material';
-import { useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { useCartStore } from '../../store/cartStore';
 import { useNavigate } from 'react-router-dom';
-import FormTextField from '../../components/FormTextField';
-import FormMaskedInput from '../../components/FormMaskedInput';
 import { getCardBrand } from '../../utils/cardUtils';
 import { isValidLuhn } from '../../utils/luhnCheck';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-
+import { formatCardNumber } from '../../utils/formatCardNumber';
+import{formatExpiry} from '../../utils/cardUtils';
 export default function CheckoutPage() {
   const { items, clearCart } = useCartStore();
   const subtotal = items.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -27,18 +27,16 @@ export default function CheckoutPage() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     getValues,
   } = useForm();
 
   const [cardBrand, setCardBrand] = useState<'Visa' | 'MasterCard' | 'Amex' | 'Unknown'>('Unknown');
 
-  const handleCardInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setCardBrand(getCardBrand(value));
+  const handleCardInput = (raw: string) => {
+    setCardBrand(getCardBrand(raw));
   };
-
-  const cardMask = cardBrand === 'Amex' ? '9999 999999 99999' : '9999 9999 9999 9999';
 
   const onSubmit = async () => {
     if (!stripe || !elements) return;
@@ -70,79 +68,145 @@ export default function CheckoutPage() {
       <form onSubmit={handleSubmit(onSubmit)} noValidate>
         <Grid container spacing={2}>
           <Grid item xs={12} sm={6}>
-            <FormTextField
+            <TextField
+              fullWidth
               label="Full Name"
-              register={register('fullName', { required: 'Full Name is required' })}
-              errorObject={errors.fullName}
+              error={!!errors.fullName}
+              helperText={typeof errors.fullName?.message === 'string' ? errors.fullName.message : ''}
+              {...register('fullName', { required: 'Full Name is required' })}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <FormTextField
+            <TextField
+              fullWidth
               label="Email"
               type="email"
-              register={register('email', {
+              error={!!errors.email}
+              helperText={typeof errors.email?.message === 'string' ? errors.email.message : ''}
+              {...register('email', {
                 required: 'Email is required',
                 pattern: {
                   value: /^\S+@\S+$/i,
                   message: 'Invalid email address',
                 },
               })}
-              errorObject={errors.email}
             />
           </Grid>
 
           <Grid item xs={12}>
-            <FormTextField
-              label="Shipping Address"
+            <TextField
+              fullWidth
               multiline
-              register={register('address', { required: 'Address is required' })}
-              errorObject={errors.address}
+              label="Shipping Address"
+              error={!!errors.address}
+              helperText={typeof errors.address?.message === 'string' ? errors.address.message : ''}
+              {...register('address', { required: 'Address is required' })}
             />
           </Grid>
 
           <Grid item xs={12} sm={6}>
-            <FormMaskedInput
-              label={`Card Number (${cardBrand})`}
-              mask={cardMask}
-              register={register('cardNumber', {
+            <Controller
+              name="cardNumber"
+              control={control}
+              rules={{
                 required: 'Card number is required',
-                validate: (val) => isValidLuhn(val) || 'Invalid card number (Luhn failed)',
-                onChange: handleCardInput, // ✅ Passed inside register config
-              })}
-              error={errors.cardNumber}
+                validate: (val) => isValidLuhn(val.replace(/\s/g, '')) || 'Invalid card number (Luhn failed)',
+              }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label={`Card Number (${cardBrand})`}
+                  placeholder="1234 5678 9012 3456"
+                  value={formatCardNumber(field.value || '')}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, '');
+                    field.onChange(raw);
+                    handleCardInput(raw);
+                  }}
+                  inputProps={{
+                    maxLength: 23, // 19 digits + spaces
+                    inputMode: 'numeric',
+                  }}
+                  error={!!fieldState.error}
+                  helperText={typeof fieldState.error?.message === 'string' ? fieldState.error.message : ''}
+                />
+              )}
             />
           </Grid>
 
+         
+          // Inside your form JSX
           <Grid item xs={6} sm={3}>
-            <FormMaskedInput
-              label="Expiry (MM/YY)"
-              mask="99/99"
-              placeholder="MM/YY"
-              register={register('expiry', {
+            <Controller
+              name="expiry"
+              control={control}
+              rules={{
                 required: 'Expiry date is required',
                 pattern: {
                   value: /^(0[1-9]|1[0-2])\/\d{2}$/,
-                  message: 'Format MM/YY',
+                  message: 'Format must be MM/YY',
                 },
-              })}
-              error={errors.expiry}
+                validate: (value: string) => {
+                  const [monthStr, yearStr] = value.split('/');
+                  const month = parseInt(monthStr, 10);
+                  const year = parseInt('20' + yearStr, 10); // assuming 20YY
+
+                  if (isNaN(month) || isNaN(year)) return 'Invalid date';
+
+                  const now = new Date();
+                  const currentMonth = now.getMonth() + 1;
+                  const currentYear = now.getFullYear();
+
+                  if (year < currentYear || (year === currentYear && month < currentMonth)) {
+                    return 'Card has expired';
+                  }
+
+                  return true;
+                },
+              }}
+              render={({ field, fieldState }) => (
+                <TextField
+                  {...field}
+                  fullWidth
+                  label="Expiry (MM/YY)"
+                  placeholder="MM/YY"
+                  value={formatExpiry(field.value || '')}
+                  onChange={(e) => {
+                    const raw = e.target.value.replace(/\D/g, '').slice(0, 4); // 4 digits max
+                    const formatted = formatExpiry(raw);
+                    field.onChange(formatted);
+                  }}
+                  inputProps={{
+                    maxLength: 5,
+                    inputMode: 'numeric',
+                  }}
+                  error={!!fieldState.error}
+                  helperText={fieldState.error?.message || ''}
+                />
+              )}
             />
           </Grid>
 
           <Grid item xs={6} sm={3}>
-            <FormTextField
+            <TextField
+              fullWidth
               label="CVC"
               type="password"
-              inputProps={{ maxLength: 4 }}
-              register={register('cvc', {
+              error={!!errors.cvc}
+              helperText={typeof errors.cvc?.message === 'string' ? errors.cvc.message : ''}
+              inputProps={{
+                maxLength: 4,
+                inputMode: 'numeric',
+              }}
+              {...register('cvc', {
                 required: 'CVC is required',
                 pattern: {
                   value: /^[0-9]{3,4}$/,
                   message: '3 or 4 digit CVC',
                 },
               })}
-              errorObject={errors.cvc}
             />
           </Grid>
 

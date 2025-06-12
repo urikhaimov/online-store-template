@@ -7,3 +7,10 @@ export function getCardBrand(cardNumber: string): 'Visa' | 'MasterCard' | 'Amex'
 
   return 'Unknown';
 }
+export function formatExpiry(value: string): string {
+  const digits = value.replace(/\D/g, '');
+  const month = digits.slice(0, 2);
+  const year = digits.slice(2, 4);
+
+  return [month, year].filter(Boolean).join('/');
+}
