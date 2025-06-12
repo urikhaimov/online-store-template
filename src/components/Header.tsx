@@ -11,7 +11,7 @@ import Navbar from './Navbar';
 import { useSafeAuth } from '../hooks/useAuth';
 import  {StoreSwitcher}  from './StoreSwitcher';
 import { useStoreSettings } from '../stores/useStoreSettings';
-import { useCartStore } from '../stores/useCartStore';
+import { useCartStore } from '../store/cartStore';
 
 
 

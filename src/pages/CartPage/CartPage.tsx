@@ -7,7 +7,7 @@ import {
   ListItem,
   ListItemText,
 } from '@mui/material';
-import { useCartStore } from '../../stores/useCartStore';
+import { useCartStore } from '../../store/cartStore';
 
 const CartPage = () => {
   const items = useCartStore((state) => state.items);
