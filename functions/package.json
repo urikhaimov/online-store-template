@@ -1,23 +1,24 @@
+
 {
   "name": "functions",
   "version": "1.0.0",
-  "type": "module",
-  "main": "dist/index.js",
+  "main": "lib/index.js",
+  "type": "commonjs",
+  "engines": {
+    "node": "20"
+  },
   "scripts": {
     "build": "tsc",
-    "setRole": "node --loader ts-node/esm src/setAdminRole.ts",
-    "setAdminUser": "node src/setAdminUser.js",
-    "getAllUsers": "node src/getAllUsers.js"
+    "setRole": "node src/setAdminRole.js"
   },
   "dependencies": {
-    "dotenv": "^16.5.0",
-    "firebase-admin": "^11.11.1",
-    "firebase-functions": "^6.3.2"
+    "firebase-admin": "^11.0.0",
+    "firebase-functions": "^4.0.0",
+    "stripe": "^12.0.0",
+    "dotenv": "^16.5.0"
   },
   "devDependencies": {
-    "@types/express": "^5.0.3",
-    "@types/node": "^20.19.0",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.2.0",
+    "@types/node": "^20.0.0"
   }
 }

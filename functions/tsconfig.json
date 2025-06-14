@@ -1,15 +1,14 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "resolveJsonModule": true,
     "target": "es2020",
     "module": "commonjs",
+    "outDir": "lib",
+    "rootDir": "src",
     "strict": true,
-    "lib": ["es2020"]
-  },
-  "ts-node": {
-    "esm": true
+    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "types": ["node"]
   },
   "include": ["src"]
 }

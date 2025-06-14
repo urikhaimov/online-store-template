@@ -1,8 +1,7 @@
 import { initializeApp, cert, ServiceAccount } from 'firebase-admin/app';
 import { getAuth } from 'firebase-admin/auth';
 import * as dotenv from 'dotenv';
-import rawServiceAccount from '../serviceAccountKey.json' with  { type: 'json' };
-
+const rawServiceAccount = require('../serviceAccountKey.json');
 dotenv.config();
 const serviceAccount = rawServiceAccount as ServiceAccount;
 initializeApp({
