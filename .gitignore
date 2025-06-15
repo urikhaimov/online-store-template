@@ -7,18 +7,43 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-node_modules
+# Build output
 dist
 dist-ssr
-*.local
+.svelte-kit
+.next
+out
 
-# Editor directories and files
+# Firebase emulator + functions output
+.firebase
+functions/lib
+
+# Local environment files
+.env
+.env.*.local
+functions/.env
+functions/.env.*.local
+
+# System files
+.DS_Store
+
+# Dependency directories
+node_modules
+functions/node_modules
+
+# Editor and IDE files
 .vscode/*
 !.vscode/extensions.json
 .idea
-.DS_Store
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
+
+# Misc
+coverage
+*.tgz
+*.zip
+*.bak
+*.tmp
